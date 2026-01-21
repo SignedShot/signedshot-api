@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api import api_router
 from app.settings import settings
 
 app = FastAPI(
@@ -8,8 +9,4 @@ app = FastAPI(
     debug=settings.debug,
 )
 
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    """Health check endpoint."""
-    return {"status": "ok"}
+app.include_router(api_router)
