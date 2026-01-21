@@ -17,6 +17,7 @@ classifiers = [
     "Topic :: Security :: Cryptography",
 ]
 dependencies = [
+    "asyncpg>=0.30.0",
     "cryptography>=44.0.0",
     "fastapi>=0.115.0",
     "prometheus-client>=0.21.0",
@@ -24,6 +25,7 @@ dependencies = [
     "pyjwt[crypto]>=2.10.0",
     "redis>=5.2.0",
     "slowapi>=0.1.9",
+    "sqlalchemy[asyncio]>=2.0.0",
     "uvicorn>=0.32.0",
 ]
 

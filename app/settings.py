@@ -17,5 +17,8 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = False
 
+    # Database
+    database_url: str = "postgresql+asyncpg://localhost/signedshot"
+
 
 settings = Settings()
