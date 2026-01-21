@@ -1,0 +1,122 @@
+[project]
+name = "signedshot-api"
+version = "0.1.0"
+description = "Media authenticity verification API - cryptographic proof for photos and videos"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "SignedShot"}
+]
+keywords = ["media", "authenticity", "verification", "jwt", "cryptography"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+]
+dependencies = [
+    "cryptography>=44.0.0",
+    "fastapi>=0.115.0",
+    "prometheus-client>=0.21.0",
+    "pydantic-settings>=2.6.0",
+    "pyjwt[crypto]>=2.10.0",
+    "redis>=5.2.0",
+    "slowapi>=0.1.9",
+    "uvicorn>=0.32.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "poethepoet>=0.31.0",
+    "pyright>=1.1.390",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/SignedShot/signedshot-api"
+Documentation = "https://github.com/SignedShot/signedshot-api#readme"
+Repository = "https://github.com/SignedShot/signedshot-api.git"
+Issues = "https://github.com/SignedShot/signedshot-api/issues"
+
+[tool.poe.tasks]
+dev = "uvicorn app.main:app --reload"
+test = "pytest"
+test-cov = "pytest --cov=app --cov-report=html --cov-report=term-missing"
+lint = "ruff check ."
+lint-fix = "ruff check . --fix"
+format = "ruff format ."
+format-check = "ruff format --check ."
+typecheck = "pyright"
+clean = "rm -rf .pytest_cache/ .ruff_cache/ htmlcov/ .coverage && find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true"
+
+[tool.poe.tasks.check]
+sequence = ["lint", "format-check", "typecheck"]
+help = "Run all quality checks"
+
+[tool.poe.tasks.fix]
+sequence = ["lint-fix", "format"]
+help = "Fix linting issues and format code"
+
+[tool.poe.tasks.all]
+sequence = ["check", "test-cov"]
+help = "Run all checks and tests"
+
+[tool.poe.tasks.pre-commit]
+sequence = ["check", "test"]
+help = "Run all checks before committing"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "PTH", # flake8-use-pathlib
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pyright]
+include = ["app"]
+exclude = ["**/node_modules", "**/__pycache__", ".venv"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedImport = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"

@@ -1,0 +1,1 @@
+"""SignedShot API tests."""
