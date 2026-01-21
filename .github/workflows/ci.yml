@@ -61,5 +61,5 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Test
-        run: uv run poe test
+      - name: Test with coverage
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=50
