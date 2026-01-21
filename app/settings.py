@@ -1,4 +1,13 @@
+from enum import Enum
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class StorageType(str, Enum):
+    """Storage backend type."""
+
+    MEMORY = "memory"
+    REDIS = "redis"
 
 
 class Settings(BaseSettings):
@@ -19,6 +28,10 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://localhost/signedshot"
+
+    # Storage
+    storage_type: StorageType = StorageType.MEMORY
+    redis_url: str = "redis://localhost:6379"
 
     # Session
     session_expiry_seconds: int = 300  # 5 minutes
