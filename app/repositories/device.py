@@ -16,6 +16,15 @@ class DeviceRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_by_token_hash(
+        self, session: AsyncSession, token_hash: str
+    ) -> Device | None:
+        """Get a device by its token hash."""
+        result = await session.execute(
+            select(Device).where(Device.token_hash == token_hash)
+        )
+        return result.scalar_one_or_none()
+
     async def create(
         self, session: AsyncSession, device_id: str, token_hash: str
     ) -> Device:

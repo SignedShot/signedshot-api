@@ -67,6 +67,53 @@ def register(
 
 
 @app.command()
+def session(
+    token: str = typer.Argument(..., help="Device token from registration"),
+    base_url: str = typer.Option(DEFAULT_BASE_URL, "--url", "-u", help="API base URL"),
+) -> None:
+    """Create a capture session using device token."""
+    url = f"{base_url}/capture/session"
+
+    typer.echo("Creating capture session...")
+    typer.echo(f"URL: {url}")
+
+    try:
+        response = httpx.post(
+            url,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        if response.status_code == 201:
+            data = response.json()
+            typer.echo(typer.style("\nSuccess!", fg=typer.colors.GREEN, bold=True))
+            typer.echo(f"Session ID: {data['session_id']}")
+            typer.echo(f"Expires At: {data['expires_at']}")
+        elif response.status_code == 401:
+            typer.echo(
+                typer.style("\nInvalid device token", fg=typer.colors.RED),
+                err=True,
+            )
+            raise typer.Exit(1)
+        else:
+            typer.echo(
+                typer.style(f"\nError: {response.status_code}", fg=typer.colors.RED),
+                err=True,
+            )
+            typer.echo(response.text)
+            raise typer.Exit(1)
+
+    except httpx.ConnectError:
+        typer.echo(
+            typer.style(
+                f"\nCould not connect to {base_url}. Is the server running?",
+                fg=typer.colors.RED,
+            ),
+            err=True,
+        )
+        raise typer.Exit(1) from None
+
+
+@app.command()
 def health(
     base_url: str = typer.Option(DEFAULT_BASE_URL, "--url", "-u", help="API base URL"),
 ) -> None:

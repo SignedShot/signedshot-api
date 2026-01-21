@@ -20,5 +20,8 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql+asyncpg://localhost/signedshot"
 
+    # Session
+    session_expiry_seconds: int = 300  # 5 minutes
+
 
 settings = Settings()
