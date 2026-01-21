@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: signedshot-db
+    environment:
+      POSTGRES_USER: signedshot
+      POSTGRES_PASSWORD: signedshot
+      POSTGRES_DB: signedshot
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

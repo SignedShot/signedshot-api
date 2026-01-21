@@ -26,9 +26,10 @@ The JWT token proves:
 ### Prerequisites
 
 - Python 3.12+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+- [uv](https://docs.astral.sh/uv/)
+- Docker (for Postgres)
 
-### Installation
+### Setup
 
 ```bash
 # Clone the repository
@@ -41,11 +42,29 @@ uv sync --dev
 # Copy environment configuration
 cp .env.example .env
 
-# Run the server
+# Start Postgres
+docker compose up -d
+
+# Run database migrations
+uv run alembic upgrade head
+
+# Start the server
 uv run poe dev
 ```
 
 The API will be available at `http://localhost:8000`
+
+### CLI
+
+A CLI is provided for testing the API:
+
+```bash
+# Check API health
+uv run python scripts/cli.py health
+
+# Register a device
+uv run python scripts/cli.py register my-device-id
+```
 
 ## Development
 
@@ -61,6 +80,9 @@ uv run poe format
 
 # Fix linting issues
 uv run poe fix
+
+# Create a new migration
+uv run alembic revision -m "description"
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
