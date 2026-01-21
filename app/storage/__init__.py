@@ -1,4 +1,5 @@
 """Session storage module."""
+
 import logging
 
 from redis.asyncio import Redis
