@@ -27,7 +27,7 @@ async def register_device(
     The token is only returned once and cannot be retrieved again.
     """
     try:
-        device, token = await device_service.register(session, request.device_id)
+        device, token = await device_service.register(session, request.external_id)
     except DeviceAlreadyExistsError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -35,6 +35,8 @@ async def register_device(
         ) from None
 
     return DeviceRegisterResponse(
+        device_id=str(device.id),
+        external_id=device.external_id,
         device_token=token,
         created_at=device.created_at,
     )

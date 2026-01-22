@@ -7,12 +7,12 @@ from app.db.models import Device
 class DeviceRepository:
     """Repository for device data access."""
 
-    async def get_by_device_id(
-        self, session: AsyncSession, device_id: str
+    async def get_by_external_id(
+        self, session: AsyncSession, external_id: str
     ) -> Device | None:
-        """Get a device by its device_id."""
+        """Get a device by its external_id."""
         result = await session.execute(
-            select(Device).where(Device.device_id == device_id)
+            select(Device).where(Device.external_id == external_id)
         )
         return result.scalar_one_or_none()
 
@@ -26,10 +26,10 @@ class DeviceRepository:
         return result.scalar_one_or_none()
 
     async def create(
-        self, session: AsyncSession, device_id: str, token_hash: str
+        self, session: AsyncSession, external_id: str, token_hash: str
     ) -> Device:
         """Create a new device."""
-        device = Device(device_id=device_id, token_hash=token_hash)
+        device = Device(external_id=external_id, token_hash=token_hash)
         session.add(device)
         await session.commit()
         await session.refresh(device)

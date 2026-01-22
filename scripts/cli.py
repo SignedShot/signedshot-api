@@ -11,21 +11,23 @@ DEFAULT_BASE_URL = "http://localhost:8000"
 
 @app.command()
 def register(
-    device_id: str = typer.Argument(..., help="Device ID to register"),
+    external_id: str = typer.Argument(..., help="External device ID to register"),
     base_url: str = typer.Option(DEFAULT_BASE_URL, "--url", "-u", help="API base URL"),
 ) -> None:
     """Register a new device and get a token."""
     url = f"{base_url}/devices/register"
 
-    typer.echo(f"Registering device: {device_id}")
+    typer.echo(f"Registering device: {external_id}")
     typer.echo(f"URL: {url}")
 
     try:
-        response = httpx.post(url, json={"device_id": device_id})
+        response = httpx.post(url, json={"external_id": external_id})
 
         if response.status_code == 201:
             data = response.json()
             typer.echo(typer.style("\nSuccess!", fg=typer.colors.GREEN, bold=True))
+            typer.echo(f"Device ID: {data['device_id']}")
+            typer.echo(f"External ID: {data['external_id']}")
             typer.echo(f"Device Token: {data['device_token']}")
             typer.echo(f"Created At: {data['created_at']}")
             typer.echo(

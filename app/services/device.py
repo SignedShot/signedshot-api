@@ -28,22 +28,22 @@ class DeviceService:
         return hashlib.sha256(token.encode()).hexdigest()
 
     async def register(
-        self, session: AsyncSession, device_id: str
+        self, session: AsyncSession, external_id: str
     ) -> tuple[Device, str]:
         """
         Register a new device.
 
         Returns the device and the plain token (only returned once).
-        Raises DeviceAlreadyExistsError if device_id is already registered.
+        Raises DeviceAlreadyExistsError if external_id is already registered.
         """
-        existing = await self._repository.get_by_device_id(session, device_id)
+        existing = await self._repository.get_by_external_id(session, external_id)
         if existing:
-            raise DeviceAlreadyExistsError(f"Device {device_id} already registered")
+            raise DeviceAlreadyExistsError(f"Device {external_id} already registered")
 
         token = self._generate_token()
         token_hash = self._hash_token(token)
 
-        device = await self._repository.create(session, device_id, token_hash)
+        device = await self._repository.create(session, external_id, token_hash)
         return device, token
 
 
