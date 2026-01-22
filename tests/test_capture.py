@@ -15,8 +15,8 @@ client = TestClient(app)
 def test_create_session_success() -> None:
     """Successfully create a capture session with valid device token."""
     mock_device = Device(
-        id=1,
-        device_id="test-device-123",
+        id=uuid.uuid4(),
+        external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
     )

@@ -16,8 +16,8 @@ class Device(Base):
 
     __tablename__ = "devices"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    device_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    external_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     token_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)

@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
@@ -12,9 +13,10 @@ client = TestClient(app)
 
 def test_register_device_success() -> None:
     """Successfully register a new device."""
+    device_uuid = uuid.uuid4()
     mock_device = Device(
-        id=1,
-        device_id="test-device-123",
+        id=device_uuid,
+        external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
     )
@@ -30,11 +32,13 @@ def test_register_device_success() -> None:
 
             response = client.post(
                 "/devices/register",
-                json={"device_id": "test-device-123"},
+                json={"external_id": "test-device-123"},
             )
 
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
+    assert data["device_id"] == str(device_uuid)
+    assert data["external_id"] == "test-device-123"
     assert data["device_token"] == "plain_token_abc123"
     assert "created_at" in data
 
@@ -54,18 +58,18 @@ def test_register_device_already_exists() -> None:
 
             response = client.post(
                 "/devices/register",
-                json={"device_id": "existing-device"},
+                json={"external_id": "existing-device"},
             )
 
     assert response.status_code == status.HTTP_409_CONFLICT
     assert response.json()["detail"] == "Device already registered"
 
 
-def test_register_device_empty_device_id() -> None:
-    """Return 422 when device_id is empty."""
+def test_register_device_empty_external_id() -> None:
+    """Return 422 when external_id is empty."""
     response = client.post(
         "/devices/register",
-        json={"device_id": ""},
+        json={"external_id": ""},
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
