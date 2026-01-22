@@ -13,7 +13,7 @@ class CaptureRepository:
 
     async def create(self, session: AsyncSession, device_id: str) -> Capture:
         """Create a new capture record."""
-        capture = Capture(device_id=device_id)
+        capture = Capture(device_id=uuid.UUID(device_id))
         session.add(capture)
         await session.commit()
         await session.refresh(capture)

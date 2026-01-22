@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, ready_for_review]
 
 jobs:
   lint:
@@ -47,7 +48,7 @@ jobs:
         run: uv run poe typecheck
 
   test:
-    name: Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,5 +62,26 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Test with coverage
-        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=50
+      - name: Run unit tests
+        run: uv run poe test
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    # Only run for non-draft PRs and pushes to main
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Run integration tests
+        run: uv run poe test-integration
