@@ -1,0 +1,79 @@
+name: Deploy Release Candidate
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  deploy-rc:
+    name: Deploy RC to Dev
+    runs-on: ubuntu-latest
+    # Only run when 'deploy-rc' label is added
+    if: github.event.label.name == 'deploy-rc'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Get latest tag and calculate RC version
+        id: rc_version
+        run: |
+          # Get the latest tag, default to v0.0.0 if none exists
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION=${LATEST_TAG#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          # Next patch version with RC suffix
+          NEW_PATCH=$((PATCH + 1))
+          # Use PR number and short SHA for RC identifier
+          RC_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}-rc.${{ github.event.pull_request.number }}"
+          echo "version=$RC_VERSION" >> $GITHUB_OUTPUT
+          echo "RC version: $RC_VERSION"
+
+      - name: Create RC Pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.rc_version.outputs.version }}
+          name: Release Candidate ${{ steps.rc_version.outputs.version }}
+          body: |
+            Release candidate for PR #${{ github.event.pull_request.number }}
+
+            **PR:** ${{ github.event.pull_request.title }}
+            **Branch:** `${{ github.event.pull_request.head.ref }}`
+
+            This is a pre-release for testing purposes.
+          prerelease: true
+          target_commitish: ${{ github.event.pull_request.head.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy RC to Railway
+        run: |
+          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+
+      - name: Set RC version in Railway
+        run: |
+          railway variables set APP_VERSION=${{ steps.rc_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Release Candidate Deployed!**\n\n**Version:** \`${{ steps.rc_version.outputs.version }}\`\n\nThe RC has been deployed to the dev environment. Check the /health endpoint to verify.`
+            })

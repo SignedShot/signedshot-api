@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # Server
     app_name: str = "SignedShot API"
     version: str = "0.1.0"
+    app_version: str = "dev"  # Set via APP_VERSION env var during deployment
     host: str = "0.0.0.0"
     port: int = 8000
     debug: bool = False
