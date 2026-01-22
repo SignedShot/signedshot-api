@@ -23,9 +23,7 @@ class CaptureRepository:
         self, session: AsyncSession, capture_id: uuid.UUID
     ) -> Capture | None:
         """Get a capture by its ID."""
-        result = await session.execute(
-            select(Capture).where(Capture.id == capture_id)
-        )
+        result = await session.execute(select(Capture).where(Capture.id == capture_id))
         return result.scalar_one_or_none()
 
     async def mark_completed(

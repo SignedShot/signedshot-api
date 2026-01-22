@@ -35,9 +35,7 @@ def test_create_session_success() -> None:
         with patch("app.api.dependencies.device_repository") as mock_repo:
             mock_repo.get_by_token_hash = AsyncMock(return_value=mock_device)
 
-            with patch(
-                "app.services.session.capture_repository"
-            ) as mock_capture_repo:
+            with patch("app.services.session.capture_repository") as mock_capture_repo:
                 mock_capture_repo.create = AsyncMock(return_value=mock_capture)
 
                 response = client.post(

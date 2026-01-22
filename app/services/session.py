@@ -42,9 +42,7 @@ class SessionService:
         """Get the storage key for a session."""
         return f"session:{nonce}"
 
-    async def create(
-        self, db: AsyncSession, device_id: str
-    ) -> CreateSessionResult:
+    async def create(self, db: AsyncSession, device_id: str) -> CreateSessionResult:
         """
         Create a new capture session for a device.
 

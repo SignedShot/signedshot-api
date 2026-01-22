@@ -29,9 +29,7 @@ class Capture(Base):
 
     __tablename__ = "captures"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     device_id: Mapped[str] = mapped_column(
         String(255), ForeignKey("devices.device_id"), index=True
     )
