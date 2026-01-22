@@ -86,11 +86,55 @@ def session(
         if response.status_code == 201:
             data = response.json()
             typer.echo(typer.style("\nSuccess!", fg=typer.colors.GREEN, bold=True))
-            typer.echo(f"Session ID: {data['session_id']}")
+            typer.echo(f"Capture ID: {data['capture_id']}")
+            typer.echo(f"Nonce: {data['nonce']}")
             typer.echo(f"Expires At: {data['expires_at']}")
         elif response.status_code == 401:
             typer.echo(
                 typer.style("\nInvalid device token", fg=typer.colors.RED),
+                err=True,
+            )
+            raise typer.Exit(1)
+        else:
+            typer.echo(
+                typer.style(f"\nError: {response.status_code}", fg=typer.colors.RED),
+                err=True,
+            )
+            typer.echo(response.text)
+            raise typer.Exit(1)
+
+    except httpx.ConnectError:
+        typer.echo(
+            typer.style(
+                f"\nCould not connect to {base_url}. Is the server running?",
+                fg=typer.colors.RED,
+            ),
+            err=True,
+        )
+        raise typer.Exit(1) from None
+
+
+@app.command()
+def trust(
+    nonce: str = typer.Argument(..., help="Nonce from capture session"),
+    base_url: str = typer.Option(DEFAULT_BASE_URL, "--url", "-u", help="API base URL"),
+) -> None:
+    """Generate a trust token using the capture session nonce."""
+    url = f"{base_url}/capture/trust"
+
+    typer.echo("Generating trust token...")
+    typer.echo(f"URL: {url}")
+
+    try:
+        response = httpx.post(url, json={"nonce": nonce})
+
+        if response.status_code == 200:
+            data = response.json()
+            typer.echo(typer.style("\nSuccess!", fg=typer.colors.GREEN, bold=True))
+            typer.echo(f"Trust Token: {data['trust_token']}")
+        elif response.status_code == 400:
+            typer.echo(
+                typer.style("\nInvalid or expired nonce", fg=typer.colors.RED),
                 err=True,
             )
             raise typer.Exit(1)

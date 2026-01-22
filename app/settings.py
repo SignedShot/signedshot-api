@@ -36,5 +36,10 @@ class Settings(BaseSettings):
     # Session
     session_expiry_seconds: int = 300  # 5 minutes
 
+    # JWT
+    jwt_private_key: str = ""  # ES256 private key in PEM format
+    jwt_issuer: str = "signedshot"
+    jwt_audience: str = "signedshot"
+
 
 settings = Settings()

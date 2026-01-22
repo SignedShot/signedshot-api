@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_device
+from app.db import get_session
 from app.db.models import Device
-from app.schemas.session import CaptureSessionResponse
+from app.repositories.capture import mark_capture_completed
+from app.schemas.session import CaptureSessionResponse, TrustRequest, TrustResponse
 from app.services.session import SessionService, get_session_service
+from app.services.trust import TrustService, get_trust_service
 
 router = APIRouter(prefix="/capture", tags=["capture"])
 
@@ -18,6 +22,7 @@ router = APIRouter(prefix="/capture", tags=["capture"])
 )
 async def create_session(
     device: Device = Depends(get_current_device),
+    db: AsyncSession = Depends(get_session),
     session_service: SessionService = Depends(get_session_service),
 ) -> CaptureSessionResponse:
     """
@@ -26,9 +31,48 @@ async def create_session(
     Requires a valid device token in the Authorization header.
     The session is valid for a limited time and can only be used once.
     """
-    session_id, expires_at = await session_service.create(device.device_id)
+    result = await session_service.create(db, device.device_id)
 
     return CaptureSessionResponse(
-        session_id=session_id,
-        expires_at=expires_at,
+        capture_id=result.capture_id,
+        nonce=result.nonce,
+        expires_at=result.expires_at,
     )
+
+
+@router.post(
+    "/trust",
+    response_model=TrustResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"description": "Invalid or expired nonce"},
+    },
+)
+async def create_trust_token(
+    request: TrustRequest,
+    background_tasks: BackgroundTasks,
+    session_service: SessionService = Depends(get_session_service),
+    trust_service: TrustService = Depends(get_trust_service),
+) -> TrustResponse:
+    """
+    Generate a trust token for a capture session.
+
+    Consumes the session (one-time use) and returns a signed JWT.
+    """
+    session_data = await session_service.consume(request.nonce)
+
+    if session_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired nonce",
+        )
+
+    # Generate the trust token
+    trust_token = trust_service.generate_token(
+        session_data.capture_id, session_data.device_id
+    )
+
+    # Mark capture as completed in background
+    background_tasks.add_task(mark_capture_completed, session_data.capture_id)
+
+    return TrustResponse(trust_token=trust_token)

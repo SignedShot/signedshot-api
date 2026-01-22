@@ -1,8 +1,30 @@
+import json
 import secrets
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.repositories.capture import capture_repository
 from app.settings import settings
 from app.storage import Storage, get_storage
+
+
+@dataclass
+class SessionData:
+    """Data stored in a session."""
+
+    capture_id: str
+    device_id: str
+
+
+@dataclass
+class CreateSessionResult:
+    """Result of creating a capture session."""
+
+    capture_id: str
+    nonce: str
+    expires_at: datetime
 
 
 class SessionService:
@@ -12,51 +34,65 @@ class SessionService:
         self._storage = storage
         self._expiry_seconds = expiry_seconds
 
-    def _generate_session_id(self) -> str:
-        """Generate a secure random session ID."""
+    def _generate_nonce(self) -> str:
+        """Generate a secure random nonce."""
         return secrets.token_urlsafe(32)
 
-    def _session_key(self, session_id: str) -> str:
+    def _session_key(self, nonce: str) -> str:
         """Get the storage key for a session."""
-        return f"session:{session_id}"
+        return f"session:{nonce}"
 
-    async def create(self, device_id: str) -> tuple[str, datetime]:
+    async def create(self, db: AsyncSession, device_id: str) -> CreateSessionResult:
         """
         Create a new capture session for a device.
 
-        Returns the session_id and expiry time.
+        Creates a Capture record in the database and stores session data in cache.
         """
-        session_id = self._generate_session_id()
+        # Create capture record in database
+        capture = await capture_repository.create(db, device_id)
+        capture_id = str(capture.id)
+
+        # Generate nonce and expiry
+        nonce = self._generate_nonce()
         expires_at = datetime.now(UTC) + timedelta(seconds=self._expiry_seconds)
 
-        # Store device_id as the session value
+        # Store session data as JSON
+        session_data = json.dumps({"capture_id": capture_id, "device_id": device_id})
         await self._storage.set(
-            self._session_key(session_id),
-            device_id,
+            self._session_key(nonce),
+            session_data,
             ttl_seconds=self._expiry_seconds,
         )
 
-        return session_id, expires_at
+        return CreateSessionResult(
+            capture_id=capture_id,
+            nonce=nonce,
+            expires_at=expires_at,
+        )
 
-    async def get_device_id(self, session_id: str) -> str | None:
+    async def get_session_data(self, nonce: str) -> SessionData | None:
         """
-        Get the device_id for a session.
+        Get the session data for a nonce.
 
         Returns None if session doesn't exist or is expired.
         """
-        return await self._storage.get(self._session_key(session_id))
+        value = await self._storage.get(self._session_key(nonce))
+        if value is None:
+            return None
+        data = json.loads(value)
+        return SessionData(capture_id=data["capture_id"], device_id=data["device_id"])
 
-    async def consume(self, session_id: str) -> str | None:
+    async def consume(self, nonce: str) -> SessionData | None:
         """
         Consume a session (one-time use).
 
-        Returns the device_id if valid, None otherwise.
+        Returns the session data if valid, None otherwise.
         Deletes the session after retrieval.
         """
-        device_id = await self.get_device_id(session_id)
-        if device_id is not None:
-            await self._storage.delete(self._session_key(session_id))
-        return device_id
+        session_data = await self.get_session_data(nonce)
+        if session_data is not None:
+            await self._storage.delete(self._session_key(nonce))
+        return session_data
 
 
 def get_session_service() -> SessionService:
