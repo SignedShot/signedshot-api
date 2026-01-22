@@ -68,7 +68,9 @@ async def create_trust_token(
         )
 
     # Generate the trust token
-    trust_token = trust_service.generate_token(session_data.capture_id)
+    trust_token = trust_service.generate_token(
+        session_data.capture_id, session_data.device_id
+    )
 
     # Mark capture as completed in background
     background_tasks.add_task(mark_capture_completed, session_data.capture_id)

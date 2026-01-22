@@ -108,7 +108,9 @@ def test_create_trust_token_success() -> None:
     data = response.json()
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
-    mock_trust_service.generate_token.assert_called_once_with(capture_id)
+    mock_trust_service.generate_token.assert_called_once_with(
+        capture_id, "test-device-123"
+    )
 
 
 def test_create_trust_token_invalid_nonce() -> None:
