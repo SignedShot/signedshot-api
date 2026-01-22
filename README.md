@@ -69,17 +69,26 @@ uv run python scripts/cli.py register my-device-id
 ## Development
 
 ```bash
-# Run all checks
+# Run all checks (lint, format, typecheck)
 uv run poe check
 
-# Run tests
+# Run unit tests
 uv run poe test
+
+# Run integration tests (requires Docker)
+uv run poe test-integration
+
+# Run all tests with coverage
+uv run poe test-all
 
 # Format code
 uv run poe format
 
 # Fix linting issues
 uv run poe fix
+
+# Pre-commit checks (lint, format, typecheck, unit tests)
+uv run poe pre-commit
 
 # Create a new migration
 uv run alembic revision -m "description"
