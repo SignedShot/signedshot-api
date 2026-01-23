@@ -31,7 +31,7 @@ def test_register_device_success() -> None:
             )
 
             response = client.post(
-                "/devices/register",
+                "/devices",
                 json={"external_id": "test-device-123"},
             )
 
@@ -57,7 +57,7 @@ def test_register_device_already_exists() -> None:
             )
 
             response = client.post(
-                "/devices/register",
+                "/devices",
                 json={"external_id": "existing-device"},
             )
 
@@ -68,7 +68,7 @@ def test_register_device_already_exists() -> None:
 def test_register_device_empty_external_id() -> None:
     """Return 422 when external_id is empty."""
     response = client.post(
-        "/devices/register",
+        "/devices",
         json={"external_id": ""},
     )
 
