@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Uuid
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -9,6 +9,23 @@ class Base(DeclarativeBase):
     """Base class for all models."""
 
     pass
+
+
+class App(Base):
+    """Registered application model."""
+
+    __tablename__ = "apps"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(255))
+    firebase_project_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, unique=True, index=True
+    )
+    track_devices: Mapped[bool] = mapped_column(Boolean, default=False)
+    sandbox: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
 
 
 class Device(Base):
@@ -30,8 +47,9 @@ class Capture(Base):
     __tablename__ = "captures"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    device_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, ForeignKey("devices.id"), index=True
+    app_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("apps.id"), index=True)
+    device_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("devices.id"), nullable=True, index=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
