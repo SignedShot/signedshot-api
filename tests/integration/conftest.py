@@ -131,12 +131,14 @@ def integration_client(
     loop.close()
 
     # Clean up data between tests using sync connection
+    # Order matters due to foreign key constraints
     from sqlalchemy import create_engine, text
 
     sync_engine = create_engine(sync_database_url)
     with sync_engine.connect() as conn:
         conn.execute(text("DELETE FROM captures"))
         conn.execute(text("DELETE FROM devices"))
+        conn.execute(text("DELETE FROM publishers"))
         conn.commit()
     sync_engine.dispose()
 

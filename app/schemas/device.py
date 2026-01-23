@@ -3,8 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class DeviceRegisterRequest(BaseModel):
-    """Request to register a new device."""
+class DeviceCreateRequest(BaseModel):
+    """Request to create a new device."""
 
     external_id: str = Field(
         min_length=1,
@@ -14,10 +14,13 @@ class DeviceRegisterRequest(BaseModel):
     )
 
 
-class DeviceRegisterResponse(BaseModel):
-    """Response after successful device registration."""
+class DeviceCreateResponse(BaseModel):
+    """Response after successful device creation."""
 
     device_id: str = Field(description="Internal UUID for the device")
+    publisher_id: str = Field(
+        description="UUID of the publisher this device belongs to"
+    )
     external_id: str = Field(description="The external ID provided during registration")
     device_token: str = Field(
         description="Bearer token for authenticating capture requests. Store securely - only returned once."

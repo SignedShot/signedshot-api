@@ -34,6 +34,9 @@ class Device(Base):
     __tablename__ = "devices"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    publisher_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("publishers.id"), index=True
+    )
     external_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     token_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
