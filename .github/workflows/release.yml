@@ -55,16 +55,16 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy to Railway
+      - name: Set version in Railway
         run: |
-          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --detach
+          railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
 
-      - name: Set version in Railway
+      - name: Deploy to Railway
         run: |
-          railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }}
+          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
