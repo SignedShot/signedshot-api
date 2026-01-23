@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,10 +28,18 @@ class DeviceRepository:
         return result.scalar_one_or_none()
 
     async def create(
-        self, session: AsyncSession, external_id: str, token_hash: str
+        self,
+        session: AsyncSession,
+        publisher_id: uuid.UUID,
+        external_id: str,
+        token_hash: str,
     ) -> Device:
         """Create a new device."""
-        device = Device(external_id=external_id, token_hash=token_hash)
+        device = Device(
+            publisher_id=publisher_id,
+            external_id=external_id,
+            token_hash=token_hash,
+        )
         session.add(device)
         await session.commit()
         await session.refresh(device)
