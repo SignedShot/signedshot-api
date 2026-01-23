@@ -41,10 +41,10 @@ def upgrade() -> None:
         unique=True,
     )
 
-    # Add app_id to captures (nullable for now to handle existing data)
+    # Add app_id to captures
     op.add_column(
         "captures",
-        sa.Column("app_id", sa.Uuid(), nullable=True),
+        sa.Column("app_id", sa.Uuid(), nullable=False),
     )
     op.create_foreign_key(
         "fk_captures_app_id",
