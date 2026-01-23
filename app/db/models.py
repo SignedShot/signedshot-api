@@ -11,10 +11,10 @@ class Base(DeclarativeBase):
     pass
 
 
-class App(Base):
-    """Registered application model."""
+class Publisher(Base):
+    """Registered publisher model."""
 
-    __tablename__ = "apps"
+    __tablename__ = "publishers"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255))
@@ -47,7 +47,9 @@ class Capture(Base):
     __tablename__ = "captures"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    app_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("apps.id"), index=True)
+    publisher_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("publishers.id"), index=True
+    )
     device_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("devices.id"), nullable=True, index=True
     )
