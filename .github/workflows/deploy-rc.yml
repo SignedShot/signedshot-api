@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [labeled]
 
+permissions:
+  contents: write       # Required to create releases/tags
+  pull-requests: write  # Required to comment on PRs
+
 jobs:
   deploy-rc:
     name: Deploy RC to Dev

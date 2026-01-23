@@ -6,6 +6,9 @@ on:
     types: [completed]
     branches: [main]
 
+permissions:
+  contents: write  # Required to create releases/tags
+
 jobs:
   release:
     name: Create Release & Deploy
