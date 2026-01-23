@@ -17,7 +17,7 @@ class TestCaptureFlow:
     def registered_device(self, integration_client: TestClient) -> dict:
         """Register a device and return its credentials."""
         response = integration_client.post(
-            "/devices/register",
+            "/devices",
             json={"external_id": "capture-test-device"},
         )
         assert response.status_code == status.HTTP_201_CREATED
@@ -168,11 +168,11 @@ class TestMultipleDevices:
         """Verify that multiple devices have isolated sessions."""
         # Register two devices
         device1 = integration_client.post(
-            "/devices/register",
+            "/devices",
             json={"external_id": "multi-device-001"},
         ).json()
         device2 = integration_client.post(
-            "/devices/register",
+            "/devices",
             json={"external_id": "multi-device-002"},
         ).json()
 

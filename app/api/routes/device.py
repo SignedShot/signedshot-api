@@ -9,14 +9,14 @@ router = APIRouter(prefix="/devices", tags=["devices"])
 
 
 @router.post(
-    "/register",
+    "",
     response_model=DeviceRegisterResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
         409: {"description": "Device already registered"},
     },
 )
-async def register_device(
+async def create_device(
     request: DeviceRegisterRequest,
     session: AsyncSession = Depends(get_session),
 ) -> DeviceRegisterResponse:
