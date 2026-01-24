@@ -13,7 +13,7 @@ class TrustService:
         self._issuer = issuer
         self._audience = audience
 
-    def generate_token(self, capture_id: str, device_id: str) -> str:
+    def generate_token(self, capture_id: str, publisher_id: str, device_id: str) -> str:
         """
         Generate a signed JWT trust token.
 
@@ -27,6 +27,7 @@ class TrustService:
             "sub": "capture-service",
             "iat": now,
             "capture_id": capture_id,
+            "publisher_id": publisher_id,
             "device_id": device_id,
         }
 

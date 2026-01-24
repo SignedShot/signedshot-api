@@ -14,16 +14,22 @@ client = TestClient(app)
 
 def test_create_session_success() -> None:
     """Successfully create a capture session with valid device token."""
+    device_uuid = uuid.uuid4()
+    publisher_uuid = uuid.uuid4()
+    capture_uuid = uuid.uuid4()
+
     mock_device = Device(
-        id=uuid.uuid4(),
+        id=device_uuid,
+        publisher_id=publisher_uuid,
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
     )
 
     mock_capture = Capture(
-        id=uuid.uuid4(),
-        device_id="test-device-123",
+        id=capture_uuid,
+        publisher_id=publisher_uuid,
+        device_id=device_uuid,
         created_at=datetime.now(UTC),
         completed_at=None,
     )
@@ -82,7 +88,14 @@ def test_create_trust_token_success() -> None:
     from app.services.trust import get_trust_service
 
     capture_id = str(uuid.uuid4())
-    mock_session_data = SessionData(capture_id=capture_id, device_id="test-device-123")
+    publisher_id = str(uuid.uuid4())
+    device_id = str(uuid.uuid4())
+
+    mock_session_data = SessionData(
+        capture_id=capture_id,
+        publisher_id=publisher_id,
+        device_id=device_id,
+    )
 
     mock_session_service = MagicMock()
     mock_session_service.consume = AsyncMock(return_value=mock_session_data)
@@ -107,7 +120,7 @@ def test_create_trust_token_success() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, "test-device-123"
+        capture_id, publisher_id, device_id
     )
 
 

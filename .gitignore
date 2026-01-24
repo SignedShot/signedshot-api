@@ -81,3 +81,6 @@ pyrightconfig.json
 *.log
 *.pem
 *.key
+
+# Claude context (local only)
+.claude/

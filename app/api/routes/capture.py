@@ -31,7 +31,7 @@ async def create_session(
     Requires a valid device token in the Authorization header.
     The session is valid for a limited time and can only be used once.
     """
-    result = await session_service.create(db, str(device.id))
+    result = await session_service.create(db, device.publisher_id, device.id)
 
     return CaptureSessionResponse(
         capture_id=result.capture_id,
@@ -69,7 +69,7 @@ async def create_trust_token(
 
     # Generate the trust token
     trust_token = trust_service.generate_token(
-        session_data.capture_id, session_data.device_id
+        session_data.capture_id, session_data.publisher_id, session_data.device_id
     )
 
     # Mark capture as completed in background
