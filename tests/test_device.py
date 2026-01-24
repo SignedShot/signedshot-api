@@ -136,9 +136,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
 
         with patch("app.api.routes.device.device_service") as mock_service:
             # First device for publisher 1
-            mock_service.create = AsyncMock(
-                return_value=(mock_device_1, "token_1")
-            )
+            mock_service.create = AsyncMock(return_value=(mock_device_1, "token_1"))
             response_1 = client.post(
                 "/devices",
                 json={"external_id": shared_external_id},
@@ -146,9 +144,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
             )
 
             # Second device for publisher 2 with same external_id
-            mock_service.create = AsyncMock(
-                return_value=(mock_device_2, "token_2")
-            )
+            mock_service.create = AsyncMock(return_value=(mock_device_2, "token_2"))
             response_2 = client.post(
                 "/devices",
                 json={"external_id": shared_external_id},
