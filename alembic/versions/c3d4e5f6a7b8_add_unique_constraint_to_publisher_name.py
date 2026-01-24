@@ -8,8 +8,9 @@ Create Date: 2026-01-24 12:00:00.000000
 
 from collections.abc import Sequence
 
-from alembic import op
 from sqlalchemy import text
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "c3d4e5f6a7b8"
@@ -22,10 +23,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     # Case-insensitive unique index on publisher name
     op.execute(
-        text(
-            "CREATE UNIQUE INDEX ix_publishers_name_lower "
-            "ON publishers (LOWER(name))"
-        )
+        text("CREATE UNIQUE INDEX ix_publishers_name_lower ON publishers (LOWER(name))")
     )
 
     # Remove global unique constraint on external_id
@@ -51,9 +49,7 @@ def downgrade() -> None:
     op.drop_constraint("uq_device_publisher_external", "devices", type_="unique")
 
     # Restore global unique index on external_id
-    op.create_index(
-        "ix_devices_external_id", "devices", ["external_id"], unique=True
-    )
+    op.create_index("ix_devices_external_id", "devices", ["external_id"], unique=True)
 
     # Drop case-insensitive index on publisher name
     op.drop_index("ix_publishers_name_lower", table_name="publishers")
