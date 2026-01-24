@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
 from app.schemas.device import DeviceCreateRequest, DeviceCreateResponse
-from app.services.device import DeviceAlreadyExistsError, device_service
+from app.services.device import device_service
 
 router = APIRouter(prefix="/devices", tags=["devices"])
 
@@ -40,15 +40,9 @@ async def create_device(
             detail="Invalid publisher ID format",
         ) from None
 
-    try:
-        device, token = await device_service.create(
-            session, publisher_id, request.external_id
-        )
-    except DeviceAlreadyExistsError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Device already registered",
-        ) from None
+    device, token = await device_service.create(
+        session, publisher_id, request.external_id
+    )
 
     return DeviceCreateResponse(
         device_id=str(device.id),

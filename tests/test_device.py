@@ -49,7 +49,7 @@ def test_create_device_success() -> None:
 
 def test_create_device_already_exists() -> None:
     """Return 409 when device is already registered."""
-    from app.services.device import DeviceAlreadyExistsError
+    from app.exceptions import EntityAlreadyExistsError
 
     publisher_uuid = uuid.uuid4()
 
@@ -59,7 +59,7 @@ def test_create_device_already_exists() -> None:
 
         with patch("app.api.routes.device.device_service") as mock_service:
             mock_service.create = AsyncMock(
-                side_effect=DeviceAlreadyExistsError("Device already registered")
+                side_effect=EntityAlreadyExistsError("Device", "existing-device")
             )
 
             response = client.post(
@@ -69,7 +69,7 @@ def test_create_device_already_exists() -> None:
             )
 
     assert response.status_code == status.HTTP_409_CONFLICT
-    assert response.json()["detail"] == "Device already registered"
+    assert response.json()["detail"] == "Device 'existing-device' already exists"
 
 
 def test_create_device_missing_publisher_id() -> None:

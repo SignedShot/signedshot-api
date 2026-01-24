@@ -1,7 +1,9 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Publisher
+from app.exceptions import EntityAlreadyExistsError
 
 
 class PublisherRepository:
@@ -39,7 +41,12 @@ class PublisherRepository:
         firebase_project_id: str | None = None,
         track_devices: bool = False,
     ) -> Publisher:
-        """Create a new publisher."""
+        """Create a new publisher.
+
+        Raises:
+            EntityAlreadyExistsError: If a publisher with the same name or
+                firebase_project_id already exists.
+        """
         publisher = Publisher(
             name=name,
             firebase_project_id=firebase_project_id,
@@ -47,7 +54,11 @@ class PublisherRepository:
             sandbox=True,  # All new publishers start in sandbox mode
         )
         session.add(publisher)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raise EntityAlreadyExistsError("Publisher", name) from None
         await session.refresh(publisher)
         return publisher
 

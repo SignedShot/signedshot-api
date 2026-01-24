@@ -1,9 +1,11 @@
 import uuid
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Device
+from app.exceptions import EntityAlreadyExistsError
 
 
 class DeviceRepository:
@@ -34,14 +36,23 @@ class DeviceRepository:
         external_id: str,
         token_hash: str,
     ) -> Device:
-        """Create a new device."""
+        """Create a new device.
+
+        Raises:
+            EntityAlreadyExistsError: If a device with the same external_id
+                already exists for this publisher.
+        """
         device = Device(
             publisher_id=publisher_id,
             external_id=external_id,
             token_hash=token_hash,
         )
         session.add(device)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raise EntityAlreadyExistsError("Device", external_id) from None
         await session.refresh(device)
         return device
 

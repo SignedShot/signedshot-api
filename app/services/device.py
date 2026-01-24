@@ -8,12 +8,6 @@ from app.db.models import Device
 from app.repositories.device import DeviceRepository, device_repository
 
 
-class DeviceAlreadyExistsError(Exception):
-    """Raised when trying to register a device that already exists."""
-
-    pass
-
-
 class DeviceService:
     """Service for device registration."""
 
@@ -35,18 +29,15 @@ class DeviceService:
         Create a new device.
 
         Returns the device and the plain token (only returned once).
-        Raises DeviceAlreadyExistsError if external_id is already registered.
+        Raises EntityAlreadyExistsError if external_id is already registered for this publisher.
         """
-        existing = await self._repository.get_by_external_id(session, external_id)
-        if existing:
-            raise DeviceAlreadyExistsError(f"Device {external_id} already registered")
-
         token = self._generate_token()
         token_hash = self._hash_token(token)
 
         device = await self._repository.create(
             session, publisher_id, external_id, token_hash
         )
+
         return device, token
 
 
