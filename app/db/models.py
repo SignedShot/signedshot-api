@@ -1,7 +1,15 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, UniqueConstraint, Uuid
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    UniqueConstraint,
+    Uuid,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -37,7 +45,9 @@ class Device(Base):
 
     __tablename__ = "devices"
     __table_args__ = (
-        UniqueConstraint("publisher_id", "external_id", name="uq_device_publisher_external"),
+        UniqueConstraint(
+            "publisher_id", "external_id", name="uq_device_publisher_external"
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)

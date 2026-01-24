@@ -48,7 +48,7 @@ app.include_router(api_router)
 
 @app.exception_handler(EntityAlreadyExistsError)
 async def entity_already_exists_handler(
-    request: Request, exc: EntityAlreadyExistsError
+    _: Request, exc: EntityAlreadyExistsError
 ) -> JSONResponse:
     """Handle duplicate entity errors."""
     return JSONResponse(
@@ -59,7 +59,7 @@ async def entity_already_exists_handler(
 
 @app.exception_handler(EntityNotFoundError)
 async def entity_not_found_handler(
-    request: Request, exc: EntityNotFoundError
+    _: Request, exc: EntityNotFoundError
 ) -> JSONResponse:
     """Handle entity not found errors."""
     return JSONResponse(
@@ -70,7 +70,7 @@ async def entity_not_found_handler(
 
 @app.exception_handler(InvalidCredentialsError)
 async def invalid_credentials_handler(
-    request: Request, exc: InvalidCredentialsError
+    _: Request, exc: InvalidCredentialsError
 ) -> JSONResponse:
     """Handle invalid credentials errors."""
     return JSONResponse(
@@ -80,9 +80,7 @@ async def invalid_credentials_handler(
 
 
 @app.exception_handler(InvalidNonceError)
-async def invalid_nonce_handler(
-    request: Request, exc: InvalidNonceError
-) -> JSONResponse:
+async def invalid_nonce_handler(_: Request, exc: InvalidNonceError) -> JSONResponse:
     """Handle invalid nonce errors."""
     return JSONResponse(
         status_code=400,
