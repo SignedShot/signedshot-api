@@ -79,3 +79,76 @@ class TestDeviceRegistration:
         assert session_response.status_code == status.HTTP_201_CREATED
         assert "nonce" in session_response.json()
         assert "capture_id" in session_response.json()
+
+    def test_same_external_id_different_publishers(
+        self, integration_client: TestClient
+    ) -> None:
+        """Same external_id can be used by different publishers (composite unique)."""
+        # Create first publisher
+        pub1_response = integration_client.post(
+            "/publishers",
+            json={"name": "Publisher One", "track_devices": True},
+        )
+        assert pub1_response.status_code == status.HTTP_201_CREATED
+        publisher_id_1 = pub1_response.json()["publisher_id"]
+
+        # Create second publisher
+        pub2_response = integration_client.post(
+            "/publishers",
+            json={"name": "Publisher Two", "track_devices": True},
+        )
+        assert pub2_response.status_code == status.HTTP_201_CREATED
+        publisher_id_2 = pub2_response.json()["publisher_id"]
+
+        shared_external_id = "shared-device-id"
+
+        # Create device for first publisher
+        device1_response = integration_client.post(
+            "/devices",
+            json={"external_id": shared_external_id},
+            headers={"X-Publisher-ID": publisher_id_1},
+        )
+        assert device1_response.status_code == status.HTTP_201_CREATED
+
+        # Create device with SAME external_id for second publisher - should succeed
+        device2_response = integration_client.post(
+            "/devices",
+            json={"external_id": shared_external_id},
+            headers={"X-Publisher-ID": publisher_id_2},
+        )
+        assert device2_response.status_code == status.HTTP_201_CREATED
+
+        # Verify both devices exist with same external_id but different publishers
+        assert device1_response.json()["external_id"] == shared_external_id
+        assert device2_response.json()["external_id"] == shared_external_id
+        assert device1_response.json()["publisher_id"] == publisher_id_1
+        assert device2_response.json()["publisher_id"] == publisher_id_2
+
+
+class TestPublisherConstraints:
+    """Test publisher database constraints."""
+
+    def test_publisher_name_case_insensitive_unique(
+        self, integration_client: TestClient
+    ) -> None:
+        """Publisher names should be unique case-insensitively."""
+        # Create publisher with lowercase name
+        response1 = integration_client.post(
+            "/publishers",
+            json={"name": "test publisher"},
+        )
+        assert response1.status_code == status.HTTP_201_CREATED
+
+        # Try to create publisher with same name but different case
+        response2 = integration_client.post(
+            "/publishers",
+            json={"name": "Test Publisher"},
+        )
+        assert response2.status_code == status.HTTP_409_CONFLICT
+
+        # Also try uppercase
+        response3 = integration_client.post(
+            "/publishers",
+            json={"name": "TEST PUBLISHER"},
+        )
+        assert response3.status_code == status.HTTP_409_CONFLICT

@@ -104,3 +104,64 @@ def test_create_device_empty_external_id() -> None:
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
+
+
+def test_create_device_same_external_id_different_publishers() -> None:
+    """Successfully create devices with same external_id for different publishers."""
+    device_uuid_1 = uuid.uuid4()
+    device_uuid_2 = uuid.uuid4()
+    publisher_uuid_1 = uuid.uuid4()
+    publisher_uuid_2 = uuid.uuid4()
+    shared_external_id = "shared-device-id"
+
+    mock_device_1 = Device(
+        id=device_uuid_1,
+        publisher_id=publisher_uuid_1,
+        external_id=shared_external_id,
+        token_hash="hashed_token_1",
+        created_at=datetime.now(UTC),
+    )
+
+    mock_device_2 = Device(
+        id=device_uuid_2,
+        publisher_id=publisher_uuid_2,
+        external_id=shared_external_id,
+        token_hash="hashed_token_2",
+        created_at=datetime.now(UTC),
+    )
+
+    with patch("app.api.routes.device.get_session") as mock_get_session:
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+
+        with patch("app.api.routes.device.device_service") as mock_service:
+            # First device for publisher 1
+            mock_service.create = AsyncMock(
+                return_value=(mock_device_1, "token_1")
+            )
+            response_1 = client.post(
+                "/devices",
+                json={"external_id": shared_external_id},
+                headers={"X-Publisher-ID": str(publisher_uuid_1)},
+            )
+
+            # Second device for publisher 2 with same external_id
+            mock_service.create = AsyncMock(
+                return_value=(mock_device_2, "token_2")
+            )
+            response_2 = client.post(
+                "/devices",
+                json={"external_id": shared_external_id},
+                headers={"X-Publisher-ID": str(publisher_uuid_2)},
+            )
+
+    # Both should succeed - same external_id is allowed for different publishers
+    assert response_1.status_code == status.HTTP_201_CREATED
+    assert response_2.status_code == status.HTTP_201_CREATED
+
+    data_1 = response_1.json()
+    data_2 = response_2.json()
+
+    assert data_1["external_id"] == shared_external_id
+    assert data_2["external_id"] == shared_external_id
+    assert data_1["publisher_id"] != data_2["publisher_id"]
