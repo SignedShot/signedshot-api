@@ -5,20 +5,29 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-# Skip reason for tests that require app_id in captures
-SKIP_REASON = "Requires app_id in captures - will be fixed when capture flow is updated"
 
-
-@pytest.mark.skip(reason=SKIP_REASON)
 class TestCaptureFlow:
     """Test the complete capture flow with real Postgres and Redis."""
 
     @pytest.fixture
-    def registered_device(self, integration_client: TestClient) -> dict:
-        """Register a device and return its credentials."""
+    def publisher_id(self, integration_client: TestClient) -> str:
+        """Create a publisher and return its ID."""
+        response = integration_client.post(
+            "/publishers",
+            json={"name": "Capture Test Publisher", "track_devices": True},
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        return response.json()["publisher_id"]
+
+    @pytest.fixture
+    def registered_device(
+        self, integration_client: TestClient, publisher_id: str
+    ) -> dict:
+        """Create a device and return its credentials."""
         response = integration_client.post(
             "/devices",
             json={"external_id": "capture-test-device"},
+            headers={"X-Publisher-ID": publisher_id},
         )
         assert response.status_code == status.HTTP_201_CREATED
         return response.json()
@@ -57,7 +66,6 @@ class TestCaptureFlow:
         """Fail to create session without device token."""
         response = integration_client.post("/capture/session")
 
-        # HTTPBearer returns 401 when token is missing (403 is for invalid token format)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_exchange_nonce_for_trust_token(
@@ -88,6 +96,7 @@ class TestCaptureFlow:
         unverified = jwt.decode(token, options={"verify_signature": False})
 
         assert unverified["capture_id"] == session_data["capture_id"]
+        assert unverified["publisher_id"] == registered_device["publisher_id"]
         assert unverified["device_id"] == registered_device["device_id"]
         assert "iat" in unverified
 
@@ -155,25 +164,39 @@ class TestCaptureFlow:
         claims = jwt.decode(token, options={"verify_signature": False})
 
         assert claims["capture_id"] == session_data["capture_id"]
+        assert claims["publisher_id"] == registered_device["publisher_id"]
         assert claims["device_id"] == registered_device["device_id"]
         assert claims["iss"] == "signedshot"
         assert claims["aud"] == "signedshot"
 
 
-@pytest.mark.skip(reason=SKIP_REASON)
 class TestMultipleDevices:
     """Test scenarios with multiple devices."""
 
-    def test_multiple_devices_isolated(self, integration_client: TestClient) -> None:
+    @pytest.fixture
+    def publisher_id(self, integration_client: TestClient) -> str:
+        """Create a publisher and return its ID."""
+        response = integration_client.post(
+            "/publishers",
+            json={"name": "Multi Device Publisher", "track_devices": True},
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+        return response.json()["publisher_id"]
+
+    def test_multiple_devices_isolated(
+        self, integration_client: TestClient, publisher_id: str
+    ) -> None:
         """Verify that multiple devices have isolated sessions."""
-        # Register two devices
+        # Create two devices
         device1 = integration_client.post(
             "/devices",
             json={"external_id": "multi-device-001"},
+            headers={"X-Publisher-ID": publisher_id},
         ).json()
         device2 = integration_client.post(
             "/devices",
             json={"external_id": "multi-device-002"},
+            headers={"X-Publisher-ID": publisher_id},
         ).json()
 
         # Create sessions for each device
@@ -201,7 +224,7 @@ class TestMultipleDevices:
         assert trust1.status_code == status.HTTP_200_OK
         assert trust2.status_code == status.HTTP_200_OK
 
-        # Verify each trust token has the correct device_id
+        # Verify each trust token has the correct device_id and publisher_id
         claims1 = jwt.decode(
             trust1.json()["trust_token"], options={"verify_signature": False}
         )
@@ -211,3 +234,5 @@ class TestMultipleDevices:
 
         assert claims1["device_id"] == device1["device_id"]
         assert claims2["device_id"] == device2["device_id"]
+        assert claims1["publisher_id"] == publisher_id
+        assert claims2["publisher_id"] == publisher_id

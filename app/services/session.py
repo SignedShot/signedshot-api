@@ -1,5 +1,6 @@
 import json
 import secrets
+import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -15,6 +16,7 @@ class SessionData:
     """Data stored in a session."""
 
     capture_id: str
+    publisher_id: str
     device_id: str
 
 
@@ -42,14 +44,16 @@ class SessionService:
         """Get the storage key for a session."""
         return f"session:{nonce}"
 
-    async def create(self, db: AsyncSession, device_id: str) -> CreateSessionResult:
+    async def create(
+        self, db: AsyncSession, publisher_id: uuid.UUID, device_id: uuid.UUID
+    ) -> CreateSessionResult:
         """
         Create a new capture session for a device.
 
         Creates a Capture record in the database and stores session data in cache.
         """
         # Create capture record in database
-        capture = await capture_repository.create(db, device_id)
+        capture = await capture_repository.create(db, publisher_id, device_id)
         capture_id = str(capture.id)
 
         # Generate nonce and expiry
@@ -57,7 +61,13 @@ class SessionService:
         expires_at = datetime.now(UTC) + timedelta(seconds=self._expiry_seconds)
 
         # Store session data as JSON
-        session_data = json.dumps({"capture_id": capture_id, "device_id": device_id})
+        session_data = json.dumps(
+            {
+                "capture_id": capture_id,
+                "publisher_id": str(publisher_id),
+                "device_id": str(device_id),
+            }
+        )
         await self._storage.set(
             self._session_key(nonce),
             session_data,
@@ -80,7 +90,11 @@ class SessionService:
         if value is None:
             return None
         data = json.loads(value)
-        return SessionData(capture_id=data["capture_id"], device_id=data["device_id"])
+        return SessionData(
+            capture_id=data["capture_id"],
+            publisher_id=data["publisher_id"],
+            device_id=data["device_id"],
+        )
 
     async def consume(self, nonce: str) -> SessionData | None:
         """
