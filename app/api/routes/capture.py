@@ -1,9 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_device
 from app.db import get_session
 from app.db.models import Device
+from app.exceptions import InvalidNonceError
 from app.repositories.capture import mark_capture_completed
 from app.schemas.session import CaptureSessionResponse, TrustRequest, TrustResponse
 from app.services.session import SessionService, get_session_service
@@ -62,10 +63,7 @@ async def create_trust_token(
     session_data = await session_service.consume(request.nonce)
 
     if session_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired nonce",
-        )
+        raise InvalidNonceError()
 
     # Generate the trust token
     trust_token = trust_service.generate_token(

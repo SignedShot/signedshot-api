@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
 from app.schemas.publisher import PublisherCreateRequest, PublisherCreateResponse
-from app.services.publisher import PublisherAlreadyExistsError, publisher_service
+from app.services.publisher import publisher_service
 
 router = APIRouter(prefix="/publishers", tags=["publishers"])
 
@@ -25,18 +25,12 @@ async def create_publisher(
 
     Returns publisher details including the publisher_id needed for capture sessions.
     """
-    try:
-        publisher = await publisher_service.create(
-            session,
-            name=request.name,
-            firebase_project_id=request.firebase_project_id,
-            track_devices=request.track_devices,
-        )
-    except PublisherAlreadyExistsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=str(e),
-        ) from None
+    publisher = await publisher_service.create(
+        session,
+        name=request.name,
+        firebase_project_id=request.firebase_project_id,
+        track_devices=request.track_devices,
+    )
 
     return PublisherCreateResponse(
         publisher_id=str(publisher.id),
