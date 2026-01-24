@@ -129,6 +129,30 @@ def test_create_publisher_firebase_project_already_exists() -> None:
     assert "already exists" in response.json()["detail"]
 
 
+def test_create_publisher_duplicate_case_insensitive() -> None:
+    """Return 409 when publisher name exists with different case."""
+    from app.exceptions import EntityAlreadyExistsError
+
+    with patch("app.api.routes.publisher.get_session") as mock_get_session:
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+
+        with patch("app.api.routes.publisher.publisher_service") as mock_service:
+            # Simulate case-insensitive conflict: "test publisher" exists,
+            # trying to create "Test Publisher"
+            mock_service.create = AsyncMock(
+                side_effect=EntityAlreadyExistsError("Publisher", "Test Publisher")
+            )
+
+            response = client.post(
+                "/publishers",
+                json={"name": "Test Publisher"},
+            )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert "already exists" in response.json()["detail"]
+
+
 def test_create_publisher_empty_name() -> None:
     """Return 422 when name is empty."""
     response = client.post(

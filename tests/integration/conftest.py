@@ -91,12 +91,27 @@ def _setup_db(
     for mod in modules_to_remove:
         del sys.modules[mod]
 
-    from sqlalchemy import create_engine
+    from sqlalchemy import create_engine, text
 
     from app.db.models import Base
 
     sync_engine = create_engine(sync_database_url)
     Base.metadata.create_all(sync_engine)
+
+    # Create case-insensitive unique index on publisher name
+    # (This is normally created via alembic migration)
+    with sync_engine.connect() as conn:
+        # Drop the regular index created by SQLAlchemy
+        conn.execute(text("DROP INDEX IF EXISTS ix_publishers_name_lower"))
+        # Create case-insensitive unique index
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX ix_publishers_name_lower "
+                "ON publishers (LOWER(name))"
+            )
+        )
+        conn.commit()
+
     sync_engine.dispose()
 
     yield
