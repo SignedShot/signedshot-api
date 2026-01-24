@@ -84,7 +84,7 @@ def test_create_publisher_minimal() -> None:
 
 def test_create_publisher_already_exists() -> None:
     """Return 409 when publisher name already exists."""
-    from app.services.publisher import PublisherAlreadyExistsError
+    from app.exceptions import EntityAlreadyExistsError
 
     with patch("app.api.routes.publisher.get_session") as mock_get_session:
         mock_session = AsyncMock()
@@ -92,9 +92,7 @@ def test_create_publisher_already_exists() -> None:
 
         with patch("app.api.routes.publisher.publisher_service") as mock_service:
             mock_service.create = AsyncMock(
-                side_effect=PublisherAlreadyExistsError(
-                    "Publisher with name 'Test Publisher' already exists"
-                )
+                side_effect=EntityAlreadyExistsError("Publisher", "Test Publisher")
             )
 
             response = client.post(
@@ -103,15 +101,12 @@ def test_create_publisher_already_exists() -> None:
             )
 
     assert response.status_code == status.HTTP_409_CONFLICT
-    assert (
-        response.json()["detail"]
-        == "Publisher with name 'Test Publisher' already exists"
-    )
+    assert response.json()["detail"] == "Publisher 'Test Publisher' already exists"
 
 
 def test_create_publisher_firebase_project_already_exists() -> None:
     """Return 409 when Firebase project is already registered."""
-    from app.services.publisher import PublisherAlreadyExistsError
+    from app.exceptions import EntityAlreadyExistsError
 
     with patch("app.api.routes.publisher.get_session") as mock_get_session:
         mock_session = AsyncMock()
@@ -119,9 +114,7 @@ def test_create_publisher_firebase_project_already_exists() -> None:
 
         with patch("app.api.routes.publisher.publisher_service") as mock_service:
             mock_service.create = AsyncMock(
-                side_effect=PublisherAlreadyExistsError(
-                    "Publisher with Firebase project 'existing-project' already exists"
-                )
+                side_effect=EntityAlreadyExistsError("Publisher", "New Publisher")
             )
 
             response = client.post(
@@ -133,7 +126,7 @@ def test_create_publisher_firebase_project_already_exists() -> None:
             )
 
     assert response.status_code == status.HTTP_409_CONFLICT
-    assert "Firebase project" in response.json()["detail"]
+    assert "already exists" in response.json()["detail"]
 
 
 def test_create_publisher_empty_name() -> None:

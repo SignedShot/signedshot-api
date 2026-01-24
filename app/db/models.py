@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, Uuid
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, UniqueConstraint, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -15,6 +15,10 @@ class Publisher(Base):
     """Registered publisher model."""
 
     __tablename__ = "publishers"
+    __table_args__ = (
+        # Case-insensitive unique index on name (created via migration)
+        Index("ix_publishers_name_lower", "name"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255))
@@ -32,12 +36,15 @@ class Device(Base):
     """Registered device model."""
 
     __tablename__ = "devices"
+    __table_args__ = (
+        UniqueConstraint("publisher_id", "external_id", name="uq_device_publisher_external"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     publisher_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("publishers.id"), index=True
     )
-    external_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    external_id: Mapped[str] = mapped_column(String(255), index=True)
     token_hash: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
