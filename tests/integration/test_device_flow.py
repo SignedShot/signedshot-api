@@ -1,5 +1,7 @@
 """Integration tests for device registration flow."""
 
+import re
+
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -152,3 +154,33 @@ class TestPublisherConstraints:
             json={"name": "TEST PUBLISHER"},
         )
         assert response3.status_code == status.HTTP_409_CONFLICT
+
+
+class TestDatetimeFormat:
+    """Test that datetime fields are serialized without microseconds."""
+
+    # Pattern: YYYY-MM-DDTHH:MM:SSZ (no microseconds)
+    ISO8601_NO_MICROSECONDS = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
+
+    def test_device_created_at_format(self, integration_client: TestClient) -> None:
+        """Device created_at should be ISO8601 without microseconds."""
+        # Create publisher
+        pub_response = integration_client.post(
+            "/publishers",
+            json={"name": "Datetime Test Publisher", "track_devices": True},
+        )
+        assert pub_response.status_code == status.HTTP_201_CREATED
+        publisher_id = pub_response.json()["publisher_id"]
+
+        # Create device
+        device_response = integration_client.post(
+            "/devices",
+            json={"external_id": "datetime-test-device"},
+            headers={"X-Publisher-ID": publisher_id},
+        )
+        assert device_response.status_code == status.HTTP_201_CREATED
+
+        created_at = device_response.json()["created_at"]
+        assert self.ISO8601_NO_MICROSECONDS.match(created_at), (
+            f"created_at '{created_at}' should match format YYYY-MM-DDTHH:MM:SSZ"
+        )
