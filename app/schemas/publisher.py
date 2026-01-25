@@ -1,6 +1,6 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
+
+from app.schemas.base import APIDatetime, APIResponse
 
 
 class PublisherCreateRequest(BaseModel):
@@ -24,7 +24,7 @@ class PublisherCreateRequest(BaseModel):
     )
 
 
-class PublisherCreateResponse(BaseModel):
+class PublisherCreateResponse(APIResponse):
     """Response after successful publisher creation."""
 
     publisher_id: str = Field(description="Internal UUID for the publisher")
@@ -34,4 +34,4 @@ class PublisherCreateResponse(BaseModel):
     )
     track_devices: bool = Field(description="Whether device tracking is enabled")
     sandbox: bool = Field(description="Whether publisher is in sandbox/debug mode")
-    created_at: datetime = Field(description="When the publisher was created")
+    created_at: APIDatetime = Field(description="When the publisher was created")

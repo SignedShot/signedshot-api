@@ -1,6 +1,6 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
+
+from app.schemas.base import APIDatetime, APIResponse
 
 
 class DeviceCreateRequest(BaseModel):
@@ -14,7 +14,7 @@ class DeviceCreateRequest(BaseModel):
     )
 
 
-class DeviceCreateResponse(BaseModel):
+class DeviceCreateResponse(APIResponse):
     """Response after successful device creation."""
 
     device_id: str = Field(description="Internal UUID for the device")
@@ -25,4 +25,4 @@ class DeviceCreateResponse(BaseModel):
     device_token: str = Field(
         description="Bearer token for authenticating capture requests. Store securely - only returned once."
     )
-    created_at: datetime = Field(description="When the device was registered")
+    created_at: APIDatetime = Field(description="When the device was registered")
