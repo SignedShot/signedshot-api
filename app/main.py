@@ -1,3 +1,7 @@
+import json
+from datetime import datetime
+from typing import Any
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -10,10 +14,35 @@ from app.exceptions import (
 )
 from app.settings import settings
 
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder that formats datetimes without microseconds."""
+
+    def default(self, o: Any) -> Any:
+        if isinstance(o, datetime):
+            return o.strftime("%Y-%m-%dT%H:%M:%SZ")
+        return super().default(o)
+
+
+class CustomJSONResponse(JSONResponse):
+    """JSON response that uses custom datetime formatting."""
+
+    def render(self, content: Any) -> bytes:
+        return json.dumps(
+            content,
+            ensure_ascii=False,
+            allow_nan=False,
+            indent=None,
+            separators=(",", ":"),
+            cls=CustomJSONEncoder,
+        ).encode("utf-8")
+
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.version,
     debug=settings.debug,
+    default_response_class=CustomJSONResponse,
     description="""
 SignedShot API provides cryptographic proof of authenticity for photos and videos.
 
