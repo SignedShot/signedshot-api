@@ -166,7 +166,7 @@ class TestCaptureFlow:
         assert claims["capture_id"] == session_data["capture_id"]
         assert claims["publisher_id"] == registered_device["publisher_id"]
         assert claims["device_id"] == registered_device["device_id"]
-        assert claims["iss"] == "signedshot"
+        assert claims["iss"] == "https://dev-api.signedshot.io"
         assert claims["aud"] == "signedshot"
 
 

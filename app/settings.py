@@ -40,7 +40,7 @@ class Settings(BaseSettings):
 
     # JWT
     jwt_private_key: str = ""  # ES256 private key in PEM format
-    jwt_issuer: str = "signedshot"
+    jwt_issuer: str = "https://dev-api.signedshot.io"  # Full URL for JWKS discovery
     jwt_audience: str = "signedshot"
 
 

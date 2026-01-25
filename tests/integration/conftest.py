@@ -75,6 +75,7 @@ def _setup_env(
     os.environ["STORAGE_TYPE"] = "redis"
     os.environ["REDIS_URL"] = redis_url
     os.environ["JWT_PRIVATE_KEY"] = test_private_key
+    os.environ["JWT_ISSUER"] = "https://dev-api.signedshot.io"
     os.environ["DEBUG"] = "true"
 
     yield
@@ -157,7 +158,9 @@ def integration_client(
         conn.commit()
     sync_engine.dispose()
 
-    # Reset storage singleton for next test
+    # Reset singletons for next test
+    import app.services.jwk
     import app.storage
 
     app.storage._storage = None
+    app.services.jwk._jwk_service = None

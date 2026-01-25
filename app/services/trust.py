@@ -2,22 +2,30 @@ from datetime import UTC, datetime
 
 import jwt
 
+from app.services.jwk import JWKService, get_jwk_service_singleton
 from app.settings import settings
 
 
 class TrustService:
     """Service for generating trust tokens."""
 
-    def __init__(self, private_key: str, issuer: str, audience: str) -> None:
+    def __init__(
+        self,
+        private_key: str,
+        issuer: str,
+        audience: str,
+        jwk_service: JWKService,
+    ) -> None:
         self._private_key = private_key
         self._issuer = issuer
         self._audience = audience
+        self._jwk_service = jwk_service
 
     def generate_token(self, capture_id: str, publisher_id: str, device_id: str) -> str:
         """
         Generate a signed JWT trust token.
 
-        Returns the signed JWT string.
+        Returns the signed JWT string with kid in header for JWKS lookup.
         """
         now = int(datetime.now(UTC).timestamp())
 
@@ -31,7 +39,12 @@ class TrustService:
             "device_id": device_id,
         }
 
-        return jwt.encode(payload, self._private_key, algorithm="ES256")
+        return jwt.encode(
+            payload,
+            self._private_key,
+            algorithm="ES256",
+            headers={"kid": self._jwk_service.get_kid()},
+        )
 
 
 def get_trust_service() -> TrustService:
@@ -40,4 +53,5 @@ def get_trust_service() -> TrustService:
         private_key=settings.jwt_private_key,
         issuer=settings.jwt_issuer,
         audience=settings.jwt_audience,
+        jwk_service=get_jwk_service_singleton(),
     )
