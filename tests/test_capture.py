@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.db.models import Capture, Device
+from app.db.models import Capture, Device, Publisher
 from app.main import app
 from app.services.session import SessionData
 
@@ -26,6 +26,13 @@ def test_create_session_success() -> None:
         created_at=datetime.now(UTC),
     )
 
+    mock_publisher = Publisher(
+        id=publisher_uuid,
+        name="Test Publisher",
+        sandbox=True,
+        created_at=datetime.now(UTC),
+    )
+
     mock_capture = Capture(
         id=capture_uuid,
         publisher_id=publisher_uuid,
@@ -38,16 +45,23 @@ def test_create_session_success() -> None:
         mock_session = AsyncMock()
         mock_get_session.return_value = mock_session
 
-        with patch("app.api.dependencies.device_repository") as mock_repo:
-            mock_repo.get_by_token_hash = AsyncMock(return_value=mock_device)
+        with patch("app.api.dependencies.device_repository") as mock_device_repo:
+            mock_device_repo.get_by_token_hash = AsyncMock(return_value=mock_device)
 
-            with patch("app.services.session.capture_repository") as mock_capture_repo:
-                mock_capture_repo.create = AsyncMock(return_value=mock_capture)
+            with patch(
+                "app.api.routes.capture.publisher_repository"
+            ) as mock_publisher_repo:
+                mock_publisher_repo.get_by_id = AsyncMock(return_value=mock_publisher)
 
-                response = client.post(
-                    "/capture/session",
-                    headers={"Authorization": "Bearer valid_token"},
-                )
+                with patch(
+                    "app.services.session.capture_repository"
+                ) as mock_capture_repo:
+                    mock_capture_repo.create = AsyncMock(return_value=mock_capture)
+
+                    response = client.post(
+                        "/capture/session",
+                        headers={"Authorization": "Bearer valid_token"},
+                    )
 
     assert response.status_code == status.HTTP_201_CREATED
     data = response.json()
@@ -95,6 +109,7 @@ def test_create_trust_token_success() -> None:
         capture_id=capture_id,
         publisher_id=publisher_id,
         device_id=device_id,
+        sandbox=True,
     )
 
     mock_session_service = MagicMock()
@@ -120,7 +135,7 @@ def test_create_trust_token_success() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, publisher_id, device_id
+        capture_id, publisher_id, device_id, method="sandbox"
     )
 
 

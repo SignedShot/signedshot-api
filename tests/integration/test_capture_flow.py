@@ -168,6 +168,7 @@ class TestCaptureFlow:
         assert claims["device_id"] == registered_device["device_id"]
         assert claims["iss"] == "https://dev-api.signedshot.io"
         assert claims["aud"] == "signedshot"
+        assert claims["method"] == "sandbox"  # All test publishers are sandbox
 
 
 class TestMultipleDevices:

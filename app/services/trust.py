@@ -1,9 +1,13 @@
 from datetime import UTC, datetime
+from typing import Literal
 
 import jwt
 
 from app.services.jwk import JWKService, get_jwk_service_singleton
 from app.settings import settings
+
+# Attestation method types
+AttestationMethod = Literal["sandbox", "app_check", "app_attest"]
 
 
 class TrustService:
@@ -21,9 +25,21 @@ class TrustService:
         self._audience = audience
         self._jwk_service = jwk_service
 
-    def generate_token(self, capture_id: str, publisher_id: str, device_id: str) -> str:
+    def generate_token(
+        self,
+        capture_id: str,
+        publisher_id: str,
+        device_id: str,
+        method: AttestationMethod,
+    ) -> str:
         """
         Generate a signed JWT trust token.
+
+        Args:
+            capture_id: The capture session ID.
+            publisher_id: The publisher ID.
+            device_id: The device ID.
+            method: The attestation method used (sandbox, app_check, app_attest).
 
         Returns the signed JWT string with kid in header for JWKS lookup.
         """
@@ -37,6 +53,7 @@ class TrustService:
             "capture_id": capture_id,
             "publisher_id": publisher_id,
             "device_id": device_id,
+            "method": method,
         }
 
         return jwt.encode(
