@@ -81,7 +81,9 @@ async def create_trust_token(
     # Determine attestation method based on publisher mode
     # For now, sandbox publishers get "sandbox" method
     # When Firebase App Check is implemented, non-sandbox will get "app_check"
-    method = "sandbox" if session_data.sandbox else "sandbox"  # TODO: implement app_check
+    method = (
+        "sandbox" if session_data.sandbox else "sandbox"
+    )  # TODO: implement app_check
 
     # Generate the trust token
     trust_token = trust_service.generate_token(
