@@ -1,16 +1,16 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
+from app.schemas.base import APIDatetime, APIResponse
 
-class CaptureSessionResponse(BaseModel):
+
+class CaptureSessionResponse(APIResponse):
     """Response after creating a capture session."""
 
     capture_id: str = Field(description="Unique identifier for this capture")
     nonce: str = Field(
         description="One-time token to exchange for a trust token after capture"
     )
-    expires_at: datetime = Field(
+    expires_at: APIDatetime = Field(
         description="When this session expires (must complete capture before this time)"
     )
 
