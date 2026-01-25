@@ -18,6 +18,7 @@ class SessionData:
     capture_id: str
     publisher_id: str
     device_id: str
+    sandbox: bool
 
 
 @dataclass
@@ -45,7 +46,11 @@ class SessionService:
         return f"session:{nonce}"
 
     async def create(
-        self, db: AsyncSession, publisher_id: uuid.UUID, device_id: uuid.UUID
+        self,
+        db: AsyncSession,
+        publisher_id: uuid.UUID,
+        device_id: uuid.UUID,
+        sandbox: bool,
     ) -> CreateSessionResult:
         """
         Create a new capture session for a device.
@@ -66,6 +71,7 @@ class SessionService:
                 "capture_id": capture_id,
                 "publisher_id": str(publisher_id),
                 "device_id": str(device_id),
+                "sandbox": sandbox,
             }
         )
         await self._storage.set(
@@ -94,6 +100,7 @@ class SessionService:
             capture_id=data["capture_id"],
             publisher_id=data["publisher_id"],
             device_id=data["device_id"],
+            sandbox=data["sandbox"],
         )
 
     async def consume(self, nonce: str) -> SessionData | None:

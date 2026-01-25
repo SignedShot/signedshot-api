@@ -6,6 +6,7 @@ from app.db import get_session
 from app.db.models import Device
 from app.exceptions import InvalidNonceError
 from app.repositories.capture import mark_capture_completed
+from app.repositories.publisher import publisher_repository
 from app.schemas.session import CaptureSessionResponse, TrustRequest, TrustResponse
 from app.services.session import SessionService, get_session_service
 from app.services.trust import TrustService, get_trust_service
@@ -32,7 +33,15 @@ async def create_session(
     Requires a valid device token in the Authorization header.
     The session is valid for a limited time and can only be used once.
     """
-    result = await session_service.create(db, device.publisher_id, device.id)
+    # Fetch publisher to get sandbox flag
+    publisher = await publisher_repository.get_by_id(db, str(device.publisher_id))
+
+    result = await session_service.create(
+        db,
+        device.publisher_id,
+        device.id,
+        sandbox=publisher.sandbox if publisher else True,
+    )
 
     return CaptureSessionResponse(
         capture_id=result.capture_id,
@@ -59,15 +68,29 @@ async def create_trust_token(
     Generate a trust token for a capture session.
 
     Consumes the session (one-time use) and returns a signed JWT.
+    The JWT includes a 'method' claim indicating the attestation level:
+    - sandbox: No attestation verified (testing mode)
+    - app_check: Firebase App Check verified (future)
+    - app_attest: Apple App Attest verified (future)
     """
     session_data = await session_service.consume(request.nonce)
 
     if session_data is None:
         raise InvalidNonceError()
 
+    # Determine attestation method based on publisher mode
+    # For now, sandbox publishers get "sandbox" method
+    # When Firebase App Check is implemented, non-sandbox will get "app_check"
+    method = (
+        "sandbox" if session_data.sandbox else "sandbox"
+    )  # TODO: implement app_check
+
     # Generate the trust token
     trust_token = trust_service.generate_token(
-        session_data.capture_id, session_data.publisher_id, session_data.device_id
+        session_data.capture_id,
+        session_data.publisher_id,
+        session_data.device_id,
+        method=method,
     )
 
     # Mark capture as completed in background
