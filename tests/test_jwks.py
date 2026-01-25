@@ -67,9 +67,7 @@ class TestJWKSEndpoint:
 class TestJWKService:
     """Tests for the JWK service."""
 
-    def test_get_jwk_returns_consistent_kid(
-        self, test_private_key_pem: str
-    ) -> None:
+    def test_get_jwk_returns_consistent_kid(self, test_private_key_pem: str) -> None:
         """JWK service should return consistent kid for same key."""
         service = JWKService(test_private_key_pem)
 
@@ -87,9 +85,7 @@ class TestJWKService:
 
         assert kid == jwk.kid
 
-    def test_get_jwks_contains_single_key(
-        self, test_private_key_pem: str
-    ) -> None:
+    def test_get_jwks_contains_single_key(self, test_private_key_pem: str) -> None:
         """get_jwks() should return a response with one key."""
         service = JWKService(test_private_key_pem)
 

@@ -8,9 +8,7 @@ from fastapi.testclient import TestClient
 class TestJWKSIntegration:
     """Test JWKS endpoint with real backends."""
 
-    def test_jwks_endpoint_returns_keys(
-        self, integration_client: TestClient
-    ) -> None:
+    def test_jwks_endpoint_returns_keys(self, integration_client: TestClient) -> None:
         """JWKS endpoint should return public keys."""
         response = integration_client.get("/.well-known/jwks.json")
 
@@ -108,9 +106,7 @@ class TestJWKSIntegration:
 
         # Find the key by kid
         header = jwt.get_unverified_header(trust_token)
-        matching_key = next(
-            key for key in jwks["keys"] if key["kid"] == header["kid"]
-        )
+        matching_key = next(key for key in jwks["keys"] if key["kid"] == header["kid"])
 
         # Convert JWK to PyJWT format for verification
         from jwt import PyJWK
