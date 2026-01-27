@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api import api_router
@@ -70,6 +71,21 @@ The API enables devices to register and obtain trust tokens that certify when an
             "description": "Health check endpoints",
         },
     ],
+)
+
+# CORS configuration
+cors_origins = ["https://signedshot.io"]
+if settings.debug:
+    cors_origins.extend([
+        "http://localhost:3000",
+    ])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app" if settings.debug else None,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(api_router)
