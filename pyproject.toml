@@ -25,6 +25,7 @@ dependencies = [
     "pydantic-settings>=2.6.0",
     "pyjwt[crypto]>=2.10.0",
     "redis>=5.2.0",
+    "signedshot>=0.1.0",
     "slowapi>=0.1.9",
     "sqlalchemy[asyncio]>=2.0.0",
     "typer>=0.15.0",
