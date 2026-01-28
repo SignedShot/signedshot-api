@@ -24,6 +24,7 @@ dependencies = [
     "prometheus-client>=0.21.0",
     "pydantic-settings>=2.6.0",
     "pyjwt[crypto]>=2.10.0",
+    "python-multipart>=0.0.9",
     "redis>=5.2.0",
     "signedshot>=0.1.0",
     "slowapi>=0.1.9",

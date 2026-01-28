@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import Field
 
 from app.schemas.base import APIResponse
@@ -17,7 +15,7 @@ class CaptureTrustInfo(APIResponse):
         description="Attestation method: sandbox, app_check, or app_attest"
     )
     issued_at: int = Field(description="Unix timestamp when token was issued")
-    key_id: Optional[str] = Field(default=None, description="Key ID used for signing")
+    key_id: str | None = Field(default=None, description="Key ID used for signing")
 
 
 class MediaIntegrityInfo(APIResponse):
@@ -48,6 +46,6 @@ class ValidationResponse(APIResponse):
     media_integrity: MediaIntegrityInfo = Field(
         description="Media integrity verification details"
     )
-    error: Optional[str] = Field(
+    error: str | None = Field(
         default=None, description="Error message if validation failed"
     )

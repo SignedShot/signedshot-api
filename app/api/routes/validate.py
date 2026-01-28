@@ -1,6 +1,5 @@
-from fastapi import APIRouter, File, UploadFile, status
-
 import signedshot
+from fastapi import APIRouter, File, UploadFile, status
 
 from app.schemas.validate import (
     CaptureTrustInfo,
