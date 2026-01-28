@@ -903,6 +903,15 @@ wheels = [
 ]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.22"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/01/979e98d542a70714b0cb2b6728ed0b7c46792b695e3eaec3e20711271ca3/python_multipart-0.0.22.tar.gz", hash = "sha256:7340bef99a7e0032613f56dc36027b959fd3b30a787ed62d310e951f7c3a3a58", size = 37612, upload-time = "2026-01-25T10:15:56.219Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1b/d0/397f9626e711ff749a95d96b7af99b9c566a9bb5129b8e4c10fc4d100304/python_multipart-0.0.22-py3-none-any.whl", hash = "sha256:2b2cd894c83d21bf49d702499531c7bafd057d730c201782048f7945d82de155", size = 24579, upload-time = "2026-01-25T10:15:54.811Z" },
+]
+
+[[package]]
 name = "pywin32"
 version = "311"
 source = { registry = "https://pypi.org/simple" }
@@ -1037,6 +1046,17 @@ wheels = [
 ]
 
 [[package]]
+name = "signedshot"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/74/bb7097ea1d94efa0ab94704dc5bd0a1cf41a75c6453ba81a03e33f96eaaf/signedshot-0.1.0.tar.gz", hash = "sha256:b1c2f23ed6f8eb2a6dd1892e3b5d2d8497dcb62cbf763ee3d017fd387e577530", size = 26923, upload-time = "2026-01-27T23:50:16.254Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/78/f9b6ac21112d91b404ce95bd82f354895fe774ba6159bf8df85cf3a32294/signedshot-0.1.0-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:592d21067d122b6f58ee20edcfaa86d819d0f6aa6bcc9474debf1371c8b79ace", size = 2005387, upload-time = "2026-01-27T23:50:07.966Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/8f/8a862208e2d325e56cb66c5cd03ddcaca86232f1af969d5d8415506cbce1/signedshot-0.1.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:5746ac537bbb6966a791c6c5aff87641b413219438b6d277e9eea856e3628132", size = 1942580, upload-time = "2026-01-27T23:50:10.095Z" },
+    { url = "https://files.pythonhosted.org/packages/11/0b/1c7fcd96b5d5e8d097094abf5470b0f133c628eda15642007d39e77b8542/signedshot-0.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:8ff94cec611ab1f194e2c5b3d2de16aac4e2e994c9eedc000f132f640114d199", size = 1772371, upload-time = "2026-01-27T23:50:11.645Z" },
+]
+
+[[package]]
 name = "signedshot-api"
 version = "0.1.0"
 source = { virtual = "." }
@@ -1048,7 +1068,9 @@ dependencies = [
     { name = "prometheus-client" },
     { name = "pydantic-settings" },
     { name = "pyjwt", extra = ["crypto"] },
+    { name = "python-multipart" },
     { name = "redis" },
+    { name = "signedshot" },
     { name = "slowapi" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "typer" },
@@ -1077,7 +1099,9 @@ requires-dist = [
     { name = "prometheus-client", specifier = ">=0.21.0" },
     { name = "pydantic-settings", specifier = ">=2.6.0" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.10.0" },
+    { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "redis", specifier = ">=5.2.0" },
+    { name = "signedshot", specifier = ">=0.1.0" },
     { name = "slowapi", specifier = ">=0.1.9" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.0" },
     { name = "typer", specifier = ">=0.15.0" },

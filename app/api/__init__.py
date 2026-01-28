@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.routes import capture, device, health, jwks, publisher
+from app.api.routes import capture, device, health, jwks, publisher, validate
 
 api_router = APIRouter()
 api_router.include_router(health.router)
@@ -10,3 +10,4 @@ api_router.include_router(publisher.router)
 api_router.include_router(device.router)
 api_router.include_router(capture.router)
 api_router.include_router(jwks.router)
+api_router.include_router(validate.router)
