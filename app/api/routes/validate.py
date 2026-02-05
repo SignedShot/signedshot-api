@@ -1,11 +1,12 @@
 import signedshot
-from fastapi import APIRouter, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from app.schemas.validate import (
     CaptureTrustInfo,
     MediaIntegrityInfo,
     ValidationResponse,
 )
+from app.services.jwk import JWKService, get_jwk_service
 
 router = APIRouter(prefix="/validate", tags=["validate"])
 
@@ -21,6 +22,7 @@ router = APIRouter(prefix="/validate", tags=["validate"])
 async def validate_media(
     media: UploadFile = File(..., description="The media file (photo/video)"),
     sidecar: UploadFile = File(..., description="The sidecar JSON file"),
+    jwk_service: JWKService = Depends(get_jwk_service),
 ) -> ValidationResponse:
     """
     Validate a SignedShot media file against its sidecar.
@@ -37,8 +39,10 @@ async def validate_media(
     media_bytes = await media.read()
     sidecar_json = (await sidecar.read()).decode("utf-8")
 
-    # Validate using the signedshot library
-    result = signedshot.validate(sidecar_json, media_bytes)
+    jwks = jwk_service.get_jwks()
+    result = signedshot.validate_with_jwks(
+        sidecar_json, media_bytes, jwks.model_dump_json()
+    )
 
     # Convert to response model
     capture_trust = result.capture_trust
