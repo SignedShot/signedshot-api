@@ -311,7 +311,7 @@ def test_create_device_non_sandbox_with_valid_app_check() -> None:
                 json={"external_id": "test-device-123"},
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
-                    "X-Firebase-AppCheck": "valid_app_check_token",
+                    "X-Attestation-Token": "valid_app_check_token",
                 },
             )
     finally:
@@ -377,7 +377,7 @@ def test_create_device_token_provided_firebase_not_initialized() -> None:
                 json={"external_id": "test-device-123"},
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
-                    "X-Firebase-AppCheck": "some_token",
+                    "X-Attestation-Token": "some_token",
                 },
             )
     finally:

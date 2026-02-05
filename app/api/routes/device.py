@@ -26,10 +26,10 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     response_model=DeviceCreateResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
-        401: {"description": "App Check verification failed"},
+        401: {"description": "Attestation verification failed"},
         404: {"description": "Publisher not found"},
         409: {"description": "Device already registered"},
-        500: {"description": "Firebase not configured"},
+        500: {"description": "Attestation service not configured"},
     },
 )
 async def create_device(
@@ -37,9 +37,9 @@ async def create_device(
     x_publisher_id: str = Header(
         ..., description="Publisher ID (from attestation token in production)"
     ),
-    x_firebase_appcheck: str | None = Header(
+    x_attestation_token: str | None = Header(
         None,
-        description="Firebase App Check token (required in production)",
+        description="Attestation token (required for non-sandbox publishers)",
     ),
     session: AsyncSession = Depends(get_session),
     firebase_service: FirebaseAppCheckService = Depends(get_firebase_service),
@@ -49,9 +49,9 @@ async def create_device(
 
     Requires X-Publisher-ID header identifying the publisher.
 
-    App Check verification rules:
-    - In production: App Check token is always required
-    - In debug mode with sandbox publisher: App Check token is optional
+    Attestation verification rules:
+    - In production: Attestation token is always required
+    - In debug mode with sandbox publisher: Attestation token is optional
     - If token is provided: it will be verified
 
     Returns a device token that must be stored securely.
@@ -70,7 +70,7 @@ async def create_device(
         raise EntityNotFoundError("Publisher", str(publisher_id))
 
     attestation = resolve_attestation(
-        x_firebase_appcheck,
+        x_attestation_token,
         firebase_service,
         publisher,
         is_production=not settings.debug,

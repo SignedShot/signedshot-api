@@ -75,7 +75,7 @@ class FirebaseAppCheckService:
         Verify a Firebase App Check token.
 
         Args:
-            token: The App Check token from X-Firebase-AppCheck header.
+            token: The App Check token from X-Attestation-Token header.
 
         Returns:
             The decoded token claims.
