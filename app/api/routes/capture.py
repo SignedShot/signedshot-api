@@ -67,10 +67,9 @@ async def create_trust_token(
     Generate a trust token for a capture session.
 
     Consumes the session (one-time use) and returns a signed JWT.
-    The JWT includes a 'method' claim indicating the attestation level:
-    - sandbox: No attestation verified (testing mode)
-    - app_check: Firebase App Check verified
-    - app_attest: Apple App Attest verified (future)
+    The JWT includes an 'attestation' object with:
+    - method: The attestation type (sandbox, app_check, app_attest)
+    - app_id: The attested app identifier (only for app_check/app_attest)
     """
     session_data = await session_service.consume(request.nonce)
 

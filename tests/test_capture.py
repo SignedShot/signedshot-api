@@ -97,6 +97,7 @@ def test_create_trust_token_success() -> None:
         publisher_id=publisher_id,
         device_id=device_id,
         attestation_method=None,  # No attestation (sandbox mode)
+        app_id=None,
     )
 
     mock_session_service = MagicMock()
@@ -122,7 +123,7 @@ def test_create_trust_token_success() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, publisher_id, device_id, method="sandbox"
+        capture_id, publisher_id, device_id, method="sandbox", app_id=None
     )
 
 
@@ -140,6 +141,7 @@ def test_create_trust_token_with_app_check() -> None:
         publisher_id=publisher_id,
         device_id=device_id,
         attestation_method="app_check",  # Device was attested
+        app_id="io.foo.bar",
     )
 
     mock_session_service = MagicMock()
@@ -165,7 +167,7 @@ def test_create_trust_token_with_app_check() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, publisher_id, device_id, method="app_check"
+        capture_id, publisher_id, device_id, method="app_check", app_id="io.foo.bar"
     )
 
 
