@@ -1,3 +1,5 @@
+from typing import cast
+
 from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,10 +8,9 @@ from app.db import get_session
 from app.db.models import Device
 from app.exceptions import InvalidNonceError
 from app.repositories.capture import mark_capture_completed
-from app.repositories.publisher import publisher_repository
 from app.schemas.session import CaptureSessionResponse, TrustRequest, TrustResponse
 from app.services.session import SessionService, get_session_service
-from app.services.trust import TrustService, get_trust_service
+from app.services.trust import AttestationMethod, TrustService, get_trust_service
 
 router = APIRouter(prefix="/capture", tags=["capture"])
 
@@ -33,14 +34,12 @@ async def create_session(
     Requires a valid device token in the Authorization header.
     The session is valid for a limited time and can only be used once.
     """
-    # Fetch publisher to get sandbox flag
-    publisher = await publisher_repository.get_by_id(db, str(device.publisher_id))
-
     result = await session_service.create(
         db,
         device.publisher_id,
         device.id,
-        sandbox=publisher.sandbox if publisher else True,
+        attestation_method=device.attestation_method,
+        app_id=device.attested_app_id,
     )
 
     return CaptureSessionResponse(
@@ -68,29 +67,22 @@ async def create_trust_token(
     Generate a trust token for a capture session.
 
     Consumes the session (one-time use) and returns a signed JWT.
-    The JWT includes a 'method' claim indicating the attestation level:
-    - sandbox: No attestation verified (testing mode)
-    - app_check: Firebase App Check verified (future)
-    - app_attest: Apple App Attest verified (future)
+    The JWT includes an 'attestation' object with:
+    - method: The attestation type (sandbox, app_check, app_attest)
+    - app_id: The attested app identifier (only for app_check/app_attest)
     """
     session_data = await session_service.consume(request.nonce)
 
     if session_data is None:
         raise InvalidNonceError()
 
-    # Determine attestation method based on publisher mode
-    # For now, sandbox publishers get "sandbox" method
-    # When Firebase App Check is implemented, non-sandbox will get "app_check"
-    method = (
-        "sandbox" if session_data.sandbox else "sandbox"
-    )  # TODO: implement app_check
-
     # Generate the trust token
     trust_token = trust_service.generate_token(
         session_data.capture_id,
         session_data.publisher_id,
         session_data.device_id,
-        method=method,
+        method=cast("AttestationMethod", session_data.attestation_method or "sandbox"),
+        app_id=session_data.app_id,
     )
 
     # Mark capture as completed in background

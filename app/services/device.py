@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 import uuid
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,10 +24,24 @@ class DeviceService:
         return hashlib.sha256(token.encode()).hexdigest()
 
     async def create(
-        self, session: AsyncSession, publisher_id: uuid.UUID, external_id: str
+        self,
+        session: AsyncSession,
+        publisher_id: uuid.UUID,
+        external_id: str,
+        attestation_method: str | None = None,
+        attested_at: datetime | None = None,
+        attested_app_id: str | None = None,
     ) -> tuple[Device, str]:
         """
         Create a new device.
+
+        Args:
+            session: Database session.
+            publisher_id: Publisher UUID.
+            external_id: External device identifier.
+            attestation_method: Optional attestation method (e.g., "app_check").
+            attested_at: Optional timestamp when attestation was verified.
+            attested_app_id: Optional app ID from attestation (e.g., bundle ID).
 
         Returns the device and the plain token (only returned once).
         Raises EntityAlreadyExistsError if external_id is already registered for this publisher.
@@ -35,7 +50,13 @@ class DeviceService:
         token_hash = self._hash_token(token)
 
         device = await self._repository.create(
-            session, publisher_id, external_id, token_hash
+            session,
+            publisher_id,
+            external_id,
+            token_hash,
+            attestation_method=attestation_method,
+            attested_at=attested_at,
+            attested_app_id=attested_app_id,
         )
 
         return device, token
