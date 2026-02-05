@@ -51,12 +51,15 @@ This runs:
 ### Individual Commands
 
 ```bash
-uv run poe lint        # Check code style
-uv run poe format      # Format code
-uv run poe typecheck   # Type checking
-uv run poe test        # Run tests
-uv run poe test-cov    # Run tests with coverage
-uv run poe fix         # Auto-fix linting and formatting
+uv run poe lint              # Check code style
+uv run poe format            # Format code
+uv run poe typecheck         # Type checking
+uv run poe test              # Run unit tests
+uv run poe test-cov          # Run unit tests with coverage
+uv run poe test-integration  # Run integration tests (requires Docker)
+uv run poe test-all          # Run all tests with combined coverage
+uv run poe check             # Run all quality checks (lint + format + typecheck)
+uv run poe fix               # Auto-fix linting and formatting
 ```
 
 ## Code Style
@@ -92,11 +95,17 @@ uv run poe fix         # Auto-fix linting and formatting
 ### Running Tests
 
 ```bash
-# All tests
+# Unit tests
 uv run poe test
 
-# With coverage
+# Unit tests with coverage
 uv run poe test-cov
+
+# Integration tests (requires Docker)
+uv run poe test-integration
+
+# All tests with combined coverage
+uv run poe test-all
 
 # Specific test file
 uv run pytest tests/test_specific.py
