@@ -156,6 +156,104 @@ class TestPublisherConstraints:
         assert response3.status_code == status.HTTP_409_CONFLICT
 
 
+class TestPublisherAttestationConfig:
+    """Test publisher attestation configuration with PostgreSQL enum storage."""
+
+    def test_create_publisher_with_attestation_provider(
+        self, integration_client: TestClient
+    ) -> None:
+        """Create publisher with attestation config and verify enum storage."""
+        response = integration_client.post(
+            "/publishers",
+            json={
+                "name": "Attestation Test Publisher",
+                "firebase_project_id": "test-firebase-project",
+                "sandbox": False,
+                "attestation_provider": "firebase_app_check",
+                "attestation_bundle_id": "io.signedshot.test",
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+
+        # Verify enum is returned as lowercase value (not uppercase member name)
+        assert data["attestation_provider"] == "firebase_app_check"
+        assert data["attestation_bundle_id"] == "io.signedshot.test"
+        assert data["sandbox"] is False
+
+    def test_get_publisher_returns_correct_attestation_enum(
+        self, integration_client: TestClient
+    ) -> None:
+        """Verify enum is correctly retrieved from database via GET."""
+        # Create publisher with attestation
+        create_response = integration_client.post(
+            "/publishers",
+            json={
+                "name": "Get Attestation Publisher",
+                "attestation_provider": "firebase_app_check",
+                "attestation_bundle_id": "io.signedshot.get",
+            },
+        )
+        assert create_response.status_code == status.HTTP_201_CREATED
+        publisher_id = create_response.json()["publisher_id"]
+
+        # Fetch via GET to verify database round-trip
+        get_response = integration_client.get(f"/publishers/{publisher_id}")
+
+        assert get_response.status_code == status.HTTP_200_OK
+        data = get_response.json()
+        assert data["attestation_provider"] == "firebase_app_check"
+        assert data["attestation_bundle_id"] == "io.signedshot.get"
+
+    def test_publisher_default_attestation_provider_is_none(
+        self, integration_client: TestClient
+    ) -> None:
+        """Publisher without attestation_provider defaults to 'none'."""
+        response = integration_client.post(
+            "/publishers",
+            json={"name": "Default Attestation Publisher"},
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        data = response.json()
+
+        # Default should be "none" (lowercase enum value)
+        assert data["attestation_provider"] == "none"
+        assert data["attestation_bundle_id"] is None
+
+    def test_update_publisher_attestation_provider(
+        self, integration_client: TestClient
+    ) -> None:
+        """Update publisher attestation_provider via PATCH."""
+        # Create publisher with no attestation
+        create_response = integration_client.post(
+            "/publishers",
+            json={"name": "Update Attestation Publisher"},
+        )
+        assert create_response.status_code == status.HTTP_201_CREATED
+        publisher_id = create_response.json()["publisher_id"]
+        assert create_response.json()["attestation_provider"] == "none"
+
+        # Update to firebase_app_check
+        patch_response = integration_client.patch(
+            f"/publishers/{publisher_id}",
+            json={
+                "attestation_provider": "firebase_app_check",
+                "attestation_bundle_id": "io.signedshot.updated",
+            },
+        )
+
+        assert patch_response.status_code == status.HTTP_200_OK
+        data = patch_response.json()
+        assert data["attestation_provider"] == "firebase_app_check"
+        assert data["attestation_bundle_id"] == "io.signedshot.updated"
+
+        # Verify via GET
+        get_response = integration_client.get(f"/publishers/{publisher_id}")
+        assert get_response.json()["attestation_provider"] == "firebase_app_check"
+
+
 class TestDatetimeFormat:
     """Test that datetime fields are serialized without microseconds."""
 

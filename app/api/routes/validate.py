@@ -58,6 +58,7 @@ async def validate_media(
             device_id=capture_trust["device_id"],
             capture_id=capture_trust["capture_id"],
             method=capture_trust["method"],
+            app_id=capture_trust.get("app_id"),
             issued_at=capture_trust["issued_at"],
             key_id=capture_trust.get("key_id"),
         ),

@@ -8,13 +8,12 @@ from app.db import get_session
 from app.exceptions import EntityNotFoundError
 from app.repositories.publisher import publisher_repository
 from app.schemas.device import DeviceCreateRequest, DeviceCreateResponse
-from app.services.attestation import resolve_attestation
+from app.services.attestation import InvalidPublisherConfigError, resolve_attestation
 from app.services.device import device_service
 from app.services.firebase import (
     FirebaseAppCheckService,
     get_firebase_service,
 )
-from app.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +49,10 @@ async def create_device(
     Requires X-Publisher-ID header identifying the publisher.
 
     Attestation verification rules:
-    - In production: Attestation token is always required
-    - In debug mode with sandbox publisher: Attestation token is optional
-    - If token is provided: it will be verified
+    - sandbox=False, provider=NONE: Error (invalid config)
+    - sandbox=False, provider set: Token required
+    - sandbox=True, provider=NONE: Token not allowed
+    - sandbox=True, provider set: Token optional, validated if provided
 
     Returns a device token that must be stored securely.
     The token is only returned once and cannot be retrieved again.
@@ -69,12 +69,17 @@ async def create_device(
     if publisher is None:
         raise EntityNotFoundError("Publisher", str(publisher_id))
 
-    attestation = resolve_attestation(
-        x_attestation_token,
-        firebase_service,
-        publisher,
-        is_production=not settings.debug,
-    )
+    try:
+        attestation = resolve_attestation(
+            x_attestation_token,
+            firebase_service,
+            publisher,
+        )
+    except InvalidPublisherConfigError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        ) from e
 
     device, token = await device_service.create(
         session,

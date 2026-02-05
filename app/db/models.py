@@ -1,9 +1,11 @@
+import enum
 import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
     DateTime,
+    Enum,
     ForeignKey,
     Index,
     String,
@@ -11,6 +13,13 @@ from sqlalchemy import (
     Uuid,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class AttestationProvider(enum.Enum):
+    """Attestation provider type for publisher configuration."""
+
+    NONE = "none"  # No attestation required (sandbox/testing)
+    FIREBASE_APP_CHECK = "firebase_app_check"  # Firebase App Check with App Attest
 
 
 class Base(DeclarativeBase):
@@ -35,6 +44,15 @@ class Publisher(Base):
     )
     track_devices: Mapped[bool] = mapped_column(Boolean, default=False)
     sandbox: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Attestation configuration
+    attestation_provider: Mapped[AttestationProvider] = mapped_column(
+        Enum(AttestationProvider),
+        default=AttestationProvider.NONE,
+        server_default="NONE",
+    )
+    attestation_bundle_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, default=None
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
