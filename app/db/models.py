@@ -59,6 +59,13 @@ class Device(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(UTC)
     )
+    # Attestation tracking
+    attestation_method: Mapped[str | None] = mapped_column(
+        String(50), nullable=True, default=None
+    )
+    attested_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
 
 
 class Capture(Base):
