@@ -48,7 +48,7 @@ class Publisher(Base):
     attestation_provider: Mapped[AttestationProvider] = mapped_column(
         Enum(AttestationProvider),
         default=AttestationProvider.NONE,
-        server_default="none",
+        server_default="NONE",
     )
     attestation_bundle_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True, default=None
