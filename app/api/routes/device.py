@@ -82,6 +82,7 @@ async def create_device(
         request.external_id,
         attestation_method=attestation.method,
         attested_at=attestation.attested_at,
+        attested_app_id=attestation.app_id,
     )
 
     return DeviceCreateResponse(

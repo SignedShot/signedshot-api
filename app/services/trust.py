@@ -31,6 +31,7 @@ class TrustService:
         publisher_id: str,
         device_id: str,
         method: AttestationMethod,
+        app_id: str | None = None,
     ) -> str:
         """
         Generate a signed JWT trust token.
@@ -40,12 +41,13 @@ class TrustService:
             publisher_id: The publisher ID.
             device_id: The device ID.
             method: The attestation method used (sandbox, app_check, app_attest).
+            app_id: The app ID from attestation (e.g., bundle ID), if available.
 
         Returns the signed JWT string with kid in header for JWKS lookup.
         """
         now = int(datetime.now(UTC).timestamp())
 
-        payload = {
+        payload: dict[str, str | int] = {
             "iss": self._issuer,
             "aud": self._audience,
             "sub": "capture-service",
@@ -55,6 +57,9 @@ class TrustService:
             "device_id": device_id,
             "method": method,
         }
+
+        if app_id is not None:
+            payload["app_id"] = app_id
 
         return jwt.encode(
             payload,

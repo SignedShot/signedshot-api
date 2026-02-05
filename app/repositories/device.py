@@ -38,6 +38,7 @@ class DeviceRepository:
         token_hash: str,
         attestation_method: str | None = None,
         attested_at: datetime | None = None,
+        attested_app_id: str | None = None,
     ) -> Device:
         """Create a new device.
 
@@ -48,6 +49,7 @@ class DeviceRepository:
             token_hash: Hashed device token.
             attestation_method: Optional attestation method (e.g., "app_check").
             attested_at: Optional timestamp when attestation was verified.
+            attested_app_id: Optional app ID from attestation (e.g., bundle ID).
 
         Raises:
             EntityAlreadyExistsError: If a device with the same external_id
@@ -59,6 +61,7 @@ class DeviceRepository:
             token_hash=token_hash,
             attestation_method=attestation_method,
             attested_at=attested_at,
+            attested_app_id=attested_app_id,
         )
         session.add(device)
         try:

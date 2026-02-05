@@ -66,6 +66,9 @@ class Device(Base):
     attested_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, default=None
     )
+    attested_app_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, default=None
+    )
 
 
 class Capture(Base):

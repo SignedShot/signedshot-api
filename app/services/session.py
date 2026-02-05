@@ -19,6 +19,7 @@ class SessionData:
     publisher_id: str
     device_id: str
     attestation_method: str | None  # None means no attestation (sandbox)
+    app_id: str | None  # App ID from attestation (e.g., bundle ID)
 
 
 @dataclass
@@ -51,6 +52,7 @@ class SessionService:
         publisher_id: uuid.UUID,
         device_id: uuid.UUID,
         attestation_method: str | None,
+        app_id: str | None = None,
     ) -> CreateSessionResult:
         """
         Create a new capture session for a device.
@@ -63,6 +65,7 @@ class SessionService:
             device_id: Device UUID.
             attestation_method: The device's attestation method (e.g., "app_check")
                 or None if not attested.
+            app_id: The app ID from attestation (e.g., bundle ID).
         """
         # Create capture record in database
         capture = await capture_repository.create(db, publisher_id, device_id)
@@ -79,6 +82,7 @@ class SessionService:
                 "publisher_id": str(publisher_id),
                 "device_id": str(device_id),
                 "attestation_method": attestation_method,
+                "app_id": app_id,
             }
         )
         await self._storage.set(
@@ -108,6 +112,7 @@ class SessionService:
             publisher_id=data["publisher_id"],
             device_id=data["device_id"],
             attestation_method=data.get("attestation_method"),
+            app_id=data.get("app_id"),
         )
 
     async def consume(self, nonce: str) -> SessionData | None:

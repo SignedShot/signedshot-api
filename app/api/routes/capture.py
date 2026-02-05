@@ -39,6 +39,7 @@ async def create_session(
         device.publisher_id,
         device.id,
         attestation_method=device.attestation_method,
+        app_id=device.attested_app_id,
     )
 
     return CaptureSessionResponse(
@@ -82,6 +83,7 @@ async def create_trust_token(
         session_data.publisher_id,
         session_data.device_id,
         method=cast("AttestationMethod", session_data.attestation_method or "sandbox"),
+        app_id=session_data.app_id,
     )
 
     # Mark capture as completed in background

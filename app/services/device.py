@@ -30,6 +30,7 @@ class DeviceService:
         external_id: str,
         attestation_method: str | None = None,
         attested_at: datetime | None = None,
+        attested_app_id: str | None = None,
     ) -> tuple[Device, str]:
         """
         Create a new device.
@@ -40,6 +41,7 @@ class DeviceService:
             external_id: External device identifier.
             attestation_method: Optional attestation method (e.g., "app_check").
             attested_at: Optional timestamp when attestation was verified.
+            attested_app_id: Optional app ID from attestation (e.g., bundle ID).
 
         Returns the device and the plain token (only returned once).
         Raises EntityAlreadyExistsError if external_id is already registered for this publisher.
@@ -54,6 +56,7 @@ class DeviceService:
             token_hash,
             attestation_method=attestation_method,
             attested_at=attested_at,
+            attested_app_id=attested_app_id,
         )
 
         return device, token
