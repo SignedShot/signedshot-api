@@ -5,31 +5,54 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from app.db.models import Device, Publisher
+from app.db.models import AttestationProvider, Device, Publisher
 from app.main import app
 
 client = TestClient(app)
 
 
 def _mock_sandbox_publisher(publisher_uuid: uuid.UUID) -> Publisher:
-    """Create a mock publisher in sandbox mode."""
+    """Create a mock publisher in sandbox mode with no provider (demo mode)."""
     return Publisher(
         id=publisher_uuid,
         name="Test Publisher",
         sandbox=True,
+        attestation_provider=AttestationProvider.NONE,
         created_at=datetime.now(UTC),
     )
 
 
-def _mock_firebase_service() -> MagicMock:
-    """Create a mock Firebase service (not initialized for sandbox)."""
+def _mock_sandbox_publisher_with_provider(publisher_uuid: uuid.UUID) -> Publisher:
+    """Create a mock publisher in sandbox mode with Firebase provider."""
+    return Publisher(
+        id=publisher_uuid,
+        name="Test Publisher",
+        sandbox=True,
+        attestation_provider=AttestationProvider.FIREBASE_APP_CHECK,
+        created_at=datetime.now(UTC),
+    )
+
+
+def _mock_production_publisher(publisher_uuid: uuid.UUID) -> Publisher:
+    """Create a mock publisher in production mode (sandbox=False)."""
+    return Publisher(
+        id=publisher_uuid,
+        name="Production Publisher",
+        sandbox=False,
+        attestation_provider=AttestationProvider.FIREBASE_APP_CHECK,
+        created_at=datetime.now(UTC),
+    )
+
+
+def _mock_firebase_service(initialized: bool = False) -> MagicMock:
+    """Create a mock Firebase service."""
     mock = MagicMock()
-    mock.is_initialized = False
+    mock.is_initialized = initialized
     return mock
 
 
-def test_create_device_success_sandbox_debug_mode() -> None:
-    """Successfully create a device in sandbox mode (debug environment)."""
+def test_create_device_success_sandbox_no_token() -> None:
+    """Successfully create a device in sandbox mode without token (demo)."""
     device_uuid = uuid.uuid4()
     publisher_uuid = uuid.uuid4()
     mock_device = Device(
@@ -42,13 +65,11 @@ def test_create_device_success_sandbox_debug_mode() -> None:
     mock_publisher = _mock_sandbox_publisher(publisher_uuid)
 
     with (
-        patch("app.api.routes.device.settings") as mock_settings,
         patch("app.api.routes.device.get_session") as mock_get_session,
         patch("app.api.routes.device.device_service") as mock_service,
         patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
         patch("app.api.routes.device.get_firebase_service") as mock_firebase,
     ):
-        mock_settings.debug = True  # Debug mode (not production)
         mock_session = AsyncMock()
         mock_get_session.return_value = mock_session
         mock_service.create = AsyncMock(
@@ -72,6 +93,265 @@ def test_create_device_success_sandbox_debug_mode() -> None:
     assert "created_at" in data
 
 
+def test_create_device_sandbox_no_provider_rejects_token() -> None:
+    """Sandbox with no provider should reject token."""
+    publisher_uuid = uuid.uuid4()
+    mock_publisher = _mock_sandbox_publisher(publisher_uuid)
+
+    with (
+        patch("app.api.routes.device.get_session") as mock_get_session,
+        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
+    ):
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+        mock_firebase.return_value = _mock_firebase_service(initialized=True)
+
+        response = client.post(
+            "/devices",
+            json={"external_id": "test-device-123"},
+            headers={
+                "X-Publisher-ID": str(publisher_uuid),
+                "X-Attestation-Token": "some_token",
+            },
+        )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "no attestation_provider" in response.json()["detail"]
+
+
+def test_create_device_sandbox_with_provider_no_token() -> None:
+    """Sandbox with provider should work without token."""
+    device_uuid = uuid.uuid4()
+    publisher_uuid = uuid.uuid4()
+    mock_device = Device(
+        id=device_uuid,
+        publisher_id=publisher_uuid,
+        external_id="test-device-123",
+        token_hash="hashed_token",
+        created_at=datetime.now(UTC),
+    )
+    mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
+
+    with (
+        patch("app.api.routes.device.get_session") as mock_get_session,
+        patch("app.api.routes.device.device_service") as mock_service,
+        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
+    ):
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+        mock_service.create = AsyncMock(
+            return_value=(mock_device, "plain_token_abc123")
+        )
+        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+        mock_firebase.return_value = _mock_firebase_service()
+
+        response = client.post(
+            "/devices",
+            json={"external_id": "test-device-123"},
+            headers={"X-Publisher-ID": str(publisher_uuid)},
+        )
+
+    assert response.status_code == status.HTTP_201_CREATED
+
+
+def test_create_device_sandbox_with_provider_validates_token() -> None:
+    """Sandbox with provider should validate token when provided."""
+    from app.services.firebase import get_firebase_service
+
+    device_uuid = uuid.uuid4()
+    publisher_uuid = uuid.uuid4()
+    mock_device = Device(
+        id=device_uuid,
+        publisher_id=publisher_uuid,
+        external_id="test-device-123",
+        token_hash="hashed_token",
+        created_at=datetime.now(UTC),
+    )
+    mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
+
+    mock_firebase = MagicMock()
+    mock_firebase.is_initialized = True
+    mock_firebase.verify_token = MagicMock(
+        return_value={"app_id": "io.foo.bar", "sub": "test"}
+    )
+
+    app.dependency_overrides[get_firebase_service] = lambda: mock_firebase
+
+    try:
+        with (
+            patch("app.api.routes.device.get_session") as mock_get_session,
+            patch("app.api.routes.device.device_service") as mock_service,
+            patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        ):
+            mock_session = AsyncMock()
+            mock_get_session.return_value = mock_session
+            mock_service.create = AsyncMock(
+                return_value=(mock_device, "plain_token_abc123")
+            )
+            mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+
+            response = client.post(
+                "/devices",
+                json={"external_id": "test-device-123"},
+                headers={
+                    "X-Publisher-ID": str(publisher_uuid),
+                    "X-Attestation-Token": "valid_token",
+                },
+            )
+    finally:
+        app.dependency_overrides.pop(get_firebase_service, None)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    mock_firebase.verify_token.assert_called_once_with("valid_token")
+
+
+def test_create_device_non_sandbox_requires_token() -> None:
+    """Non-sandbox publisher requires attestation token."""
+    publisher_uuid = uuid.uuid4()
+    mock_publisher = _mock_production_publisher(publisher_uuid)
+
+    with (
+        patch("app.api.routes.device.get_session") as mock_get_session,
+        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
+    ):
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+        mock_firebase.return_value = _mock_firebase_service()
+
+        response = client.post(
+            "/devices",
+            json={"external_id": "test-device-123"},
+            headers={"X-Publisher-ID": str(publisher_uuid)},
+        )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "required for non-sandbox" in response.json()["detail"]
+
+
+def test_create_device_non_sandbox_with_valid_token() -> None:
+    """Non-sandbox with valid token succeeds."""
+    from app.services.firebase import get_firebase_service
+
+    device_uuid = uuid.uuid4()
+    publisher_uuid = uuid.uuid4()
+    mock_device = Device(
+        id=device_uuid,
+        publisher_id=publisher_uuid,
+        external_id="test-device-123",
+        token_hash="hashed_token",
+        created_at=datetime.now(UTC),
+    )
+    mock_publisher = _mock_production_publisher(publisher_uuid)
+
+    mock_firebase = MagicMock()
+    mock_firebase.is_initialized = True
+    mock_firebase.verify_token = MagicMock(
+        return_value={"app_id": "io.foo.bar", "sub": "test"}
+    )
+
+    app.dependency_overrides[get_firebase_service] = lambda: mock_firebase
+
+    try:
+        with (
+            patch("app.api.routes.device.get_session") as mock_get_session,
+            patch("app.api.routes.device.device_service") as mock_service,
+            patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        ):
+            mock_session = AsyncMock()
+            mock_get_session.return_value = mock_session
+            mock_service.create = AsyncMock(
+                return_value=(mock_device, "plain_token_abc123")
+            )
+            mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+
+            response = client.post(
+                "/devices",
+                json={"external_id": "test-device-123"},
+                headers={
+                    "X-Publisher-ID": str(publisher_uuid),
+                    "X-Attestation-Token": "valid_app_check_token",
+                },
+            )
+    finally:
+        app.dependency_overrides.pop(get_firebase_service, None)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    data = response.json()
+    assert data["device_id"] == str(device_uuid)
+    mock_firebase.verify_token.assert_called_once_with("valid_app_check_token")
+
+
+def test_create_device_non_sandbox_no_provider_invalid_config() -> None:
+    """Non-sandbox without provider is invalid configuration."""
+    publisher_uuid = uuid.uuid4()
+    mock_publisher = Publisher(
+        id=publisher_uuid,
+        name="Invalid Publisher",
+        sandbox=False,
+        attestation_provider=AttestationProvider.NONE,  # Invalid: no provider
+        created_at=datetime.now(UTC),
+    )
+
+    with (
+        patch("app.api.routes.device.get_session") as mock_get_session,
+        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
+    ):
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+        mock_firebase.return_value = _mock_firebase_service(initialized=True)
+
+        # Non-sandbox without token first fails with "required for non-sandbox"
+        response = client.post(
+            "/devices",
+            json={"external_id": "test-device-123"},
+            headers={"X-Publisher-ID": str(publisher_uuid)},
+        )
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert "required for non-sandbox" in response.json()["detail"]
+
+
+def test_create_device_non_sandbox_no_provider_with_token_invalid_config() -> None:
+    """Non-sandbox without provider with token is invalid configuration."""
+    publisher_uuid = uuid.uuid4()
+    mock_publisher = Publisher(
+        id=publisher_uuid,
+        name="Invalid Publisher",
+        sandbox=False,
+        attestation_provider=AttestationProvider.NONE,  # Invalid: no provider
+        created_at=datetime.now(UTC),
+    )
+
+    with (
+        patch("app.api.routes.device.get_session") as mock_get_session,
+        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
+        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
+    ):
+        mock_session = AsyncMock()
+        mock_get_session.return_value = mock_session
+        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
+        mock_firebase.return_value = _mock_firebase_service(initialized=True)
+
+        response = client.post(
+            "/devices",
+            json={"external_id": "test-device-123"},
+            headers={
+                "X-Publisher-ID": str(publisher_uuid),
+                "X-Attestation-Token": "some_token",
+            },
+        )
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+    assert "must have" in response.json()["detail"]
+
+
 def test_create_device_already_exists() -> None:
     """Return 409 when device is already registered."""
     from app.exceptions import EntityAlreadyExistsError
@@ -80,13 +360,11 @@ def test_create_device_already_exists() -> None:
     mock_publisher = _mock_sandbox_publisher(publisher_uuid)
 
     with (
-        patch("app.api.routes.device.settings") as mock_settings,
         patch("app.api.routes.device.get_session") as mock_get_session,
         patch("app.api.routes.device.device_service") as mock_service,
         patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
         patch("app.api.routes.device.get_firebase_service") as mock_firebase,
     ):
-        mock_settings.debug = True  # Debug mode (not production)
         mock_session = AsyncMock()
         mock_get_session.return_value = mock_session
         mock_service.create = AsyncMock(
@@ -167,13 +445,11 @@ def test_create_device_same_external_id_different_publishers() -> None:
     mock_publisher_2 = _mock_sandbox_publisher(publisher_uuid_2)
 
     with (
-        patch("app.api.routes.device.settings") as mock_settings,
         patch("app.api.routes.device.get_session") as mock_get_session,
         patch("app.api.routes.device.device_service") as mock_service,
         patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
         patch("app.api.routes.device.get_firebase_service") as mock_firebase,
     ):
-        mock_settings.debug = True  # Debug mode (not production)
         mock_session = AsyncMock()
         mock_get_session.return_value = mock_session
         mock_firebase.return_value = _mock_firebase_service()
@@ -232,134 +508,15 @@ def test_create_device_publisher_not_found() -> None:
     assert "not found" in response.json()["detail"]
 
 
-def test_create_device_non_sandbox_requires_app_check() -> None:
-    """Return 401 when non-sandbox publisher without App Check token (even in debug mode)."""
-    publisher_uuid = uuid.uuid4()
-    mock_publisher = Publisher(
-        id=publisher_uuid,
-        name="Production Publisher",
-        sandbox=False,  # Non-sandbox mode
-        created_at=datetime.now(UTC),
-    )
-
-    with (
-        patch("app.api.routes.device.settings") as mock_settings,
-        patch("app.api.routes.device.get_session") as mock_get_session,
-        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
-        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
-    ):
-        mock_settings.debug = True  # Even in debug mode, non-sandbox requires App Check
-        mock_session = AsyncMock()
-        mock_get_session.return_value = mock_session
-        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
-        mock_firebase.return_value = _mock_firebase_service()
-
-        response = client.post(
-            "/devices",
-            json={"external_id": "test-device-123"},
-            headers={"X-Publisher-ID": str(publisher_uuid)},
-        )
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert "App Check token required" in response.json()["detail"]
-
-
-def test_create_device_non_sandbox_with_valid_app_check() -> None:
-    """Successfully create device for non-sandbox publisher with valid App Check."""
-    from app.services.firebase import get_firebase_service
-
-    device_uuid = uuid.uuid4()
-    publisher_uuid = uuid.uuid4()
-    mock_device = Device(
-        id=device_uuid,
-        publisher_id=publisher_uuid,
-        external_id="test-device-123",
-        token_hash="hashed_token",
-        created_at=datetime.now(UTC),
-    )
-    mock_publisher = Publisher(
-        id=publisher_uuid,
-        name="Production Publisher",
-        sandbox=False,  # Non-sandbox mode
-        created_at=datetime.now(UTC),
-    )
-
-    mock_firebase = MagicMock()
-    mock_firebase.is_initialized = True
-    mock_firebase.verify_token = MagicMock(
-        return_value={"app_id": "io.foo.bar", "sub": "test"}
-    )
-
-    # Use FastAPI's dependency override for proper injection
-    app.dependency_overrides[get_firebase_service] = lambda: mock_firebase
-
-    try:
-        with (
-            patch("app.api.routes.device.get_session") as mock_get_session,
-            patch("app.api.routes.device.device_service") as mock_service,
-            patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
-        ):
-            mock_session = AsyncMock()
-            mock_get_session.return_value = mock_session
-            mock_service.create = AsyncMock(
-                return_value=(mock_device, "plain_token_abc123")
-            )
-            mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
-
-            response = client.post(
-                "/devices",
-                json={"external_id": "test-device-123"},
-                headers={
-                    "X-Publisher-ID": str(publisher_uuid),
-                    "X-Attestation-Token": "valid_app_check_token",
-                },
-            )
-    finally:
-        # Clean up the override
-        app.dependency_overrides.pop(get_firebase_service, None)
-
-    assert response.status_code == status.HTTP_201_CREATED
-    data = response.json()
-    assert data["device_id"] == str(device_uuid)
-    mock_firebase.verify_token.assert_called_once_with("valid_app_check_token")
-
-
-def test_create_device_production_requires_app_check() -> None:
-    """Return 401 when in production environment without App Check token."""
-    publisher_uuid = uuid.uuid4()
-    mock_publisher = _mock_sandbox_publisher(publisher_uuid)  # Even sandbox publisher
-
-    with (
-        patch("app.api.routes.device.settings") as mock_settings,
-        patch("app.api.routes.device.get_session") as mock_get_session,
-        patch("app.api.routes.device.publisher_repository") as mock_pub_repo,
-        patch("app.api.routes.device.get_firebase_service") as mock_firebase,
-    ):
-        mock_settings.debug = False  # Production mode
-        mock_session = AsyncMock()
-        mock_get_session.return_value = mock_session
-        mock_pub_repo.get_by_id = AsyncMock(return_value=mock_publisher)
-        mock_firebase.return_value = _mock_firebase_service()
-
-        response = client.post(
-            "/devices",
-            json={"external_id": "test-device-123"},
-            headers={"X-Publisher-ID": str(publisher_uuid)},
-        )
-
-    assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    assert "production" in response.json()["detail"].lower()
-
-
-def test_create_device_token_provided_firebase_not_initialized() -> None:
-    """Return 500 when App Check token provided but Firebase not configured."""
+def test_create_device_firebase_not_initialized() -> None:
+    """Return 500 when token provided but Firebase not configured."""
     from app.services.firebase import get_firebase_service
 
     publisher_uuid = uuid.uuid4()
-    mock_publisher = _mock_sandbox_publisher(publisher_uuid)
+    mock_publisher = _mock_production_publisher(publisher_uuid)
 
     mock_firebase = MagicMock()
-    mock_firebase.is_initialized = False  # Firebase not configured
+    mock_firebase.is_initialized = False
 
     app.dependency_overrides[get_firebase_service] = lambda: mock_firebase
 

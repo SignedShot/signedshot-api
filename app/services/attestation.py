@@ -4,11 +4,17 @@ from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 
-from app.db.models import Publisher
+from app.db.models import AttestationProvider, Publisher
 from app.exceptions import AppCheckError
 from app.services.firebase import FirebaseAppCheckError, FirebaseAppCheckService
 
 logger = logging.getLogger(__name__)
+
+
+class InvalidPublisherConfigError(Exception):
+    """Raised when publisher has invalid attestation configuration."""
+
+    pass
 
 
 @dataclass
@@ -22,16 +28,35 @@ def resolve_attestation(
     token: str | None,
     firebase_service: FirebaseAppCheckService,
     publisher: Publisher,
-    is_production: bool,
 ) -> AttestationResult:
     if token is None:
-        if is_production:
-            raise AppCheckError("App Check token required in production environment")
-        if not publisher.sandbox:
-            raise AppCheckError("App Check token required for non-sandbox publishers")
+        if publisher.sandbox:
+            logger.debug(
+                f"Device registration in sandbox mode, publisher={publisher.id}"
+            )
+            return AttestationResult(method=None, attested_at=None, app_id=None)
+        else:
+            logger.error(
+                f"Attestation token required for non-sandbox publisher, publisher={publisher.id}"
+            )
+            raise AppCheckError("Attestation token required for non-sandbox publishers")
 
-        logger.debug(f"Device registration in sandbox mode, publisher={publisher.id}")
-        return AttestationResult(method=None, attested_at=None, app_id=None)
+    if publisher.sandbox and publisher.attestation_provider is AttestationProvider.NONE:
+        logger.warning(
+            f"Token provided but no provider configured, publisher={publisher.id}"
+        )
+        raise AppCheckError("Attestation token provided but no attestation_provider")
+
+    if (
+        not publisher.sandbox
+        and publisher.attestation_provider is AttestationProvider.NONE
+    ):
+        logger.error(
+            f"Invalid publisher config: sandbox=False but no attestation_provider, publisher={publisher.id}"
+        )
+        raise InvalidPublisherConfigError(
+            "Non-sandbox publisher must have an attestation_provider"
+        )
 
     if not firebase_service.is_initialized:
         logger.error("Firebase App Check token provided but Firebase not initialized")
@@ -42,10 +67,11 @@ def resolve_attestation(
 
     try:
         claims = firebase_service.verify_token(token)
+        app_id = publisher.attestation_bundle_id or claims.get("app_id")
         attestation = AttestationResult(
             method="app_check",
             attested_at=datetime.now(UTC),
-            app_id=claims.get("app_id"),
+            app_id=app_id,
         )
         logger.info(
             f"Device registration with App Check verified, "
