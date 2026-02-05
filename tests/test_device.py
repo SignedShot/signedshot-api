@@ -287,7 +287,7 @@ def test_create_device_non_sandbox_with_valid_app_check() -> None:
     mock_firebase = MagicMock()
     mock_firebase.is_initialized = True
     mock_firebase.verify_token = MagicMock(
-        return_value={"app_id": "io.signedshot.capture", "sub": "test"}
+        return_value={"app_id": "io.foo.bar", "sub": "test"}
     )
 
     # Use FastAPI's dependency override for proper injection
