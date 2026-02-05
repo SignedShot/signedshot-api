@@ -41,3 +41,10 @@ class InvalidNonceError(DomainException):
 
     def __init__(self, message: str = "Invalid or expired nonce") -> None:
         super().__init__(message)
+
+
+class AppCheckError(DomainException):
+    """Raised when Firebase App Check verification fails."""
+
+    def __init__(self, message: str = "App Check verification failed") -> None:
+        super().__init__(message)

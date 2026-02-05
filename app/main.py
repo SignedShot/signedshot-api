@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.api import api_router
 from app.exceptions import (
+    AppCheckError,
     EntityAlreadyExistsError,
     EntityNotFoundError,
     InvalidCredentialsError,
@@ -131,5 +132,14 @@ async def invalid_nonce_handler(_: Request, exc: InvalidNonceError) -> JSONRespo
     """Handle invalid nonce errors."""
     return JSONResponse(
         status_code=400,
+        content={"detail": str(exc)},
+    )
+
+
+@app.exception_handler(AppCheckError)
+async def app_check_error_handler(_: Request, exc: AppCheckError) -> JSONResponse:
+    """Handle App Check verification errors."""
+    return JSONResponse(
+        status_code=401,
         content={"detail": str(exc)},
     )
