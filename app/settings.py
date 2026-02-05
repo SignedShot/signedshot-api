@@ -43,5 +43,9 @@ class Settings(BaseSettings):
     jwt_issuer: str = "https://dev-api.signedshot.io"  # Full URL for JWKS discovery
     jwt_audience: str = "signedshot"
 
+    # Firebase App Check
+    firebase_credentials_json: str = ""  # Service account JSON (as string or file path)
+    firebase_project_id: str = "signedshot"
+
 
 settings = Settings()
