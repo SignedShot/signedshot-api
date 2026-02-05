@@ -14,6 +14,9 @@ class CaptureTrustInfo(APIResponse):
     method: str = Field(
         description="Attestation method: sandbox, app_check, or app_attest"
     )
+    app_id: str | None = Field(
+        default=None, description="App ID from attestation (e.g., bundle ID)"
+    )
     issued_at: int = Field(description="Unix timestamp when token was issued")
     key_id: str | None = Field(default=None, description="Key ID used for signing")
 
