@@ -19,6 +19,7 @@ router = APIRouter(prefix="/capture", tags=["capture"])
     "/session",
     response_model=CaptureSessionResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create capture session",
     responses={
         401: {"description": "Invalid or missing device token"},
     },
@@ -53,6 +54,7 @@ async def create_session(
     "/trust",
     response_model=TrustResponse,
     status_code=status.HTTP_200_OK,
+    summary="Generate trust token",
     responses={
         400: {"description": "Invalid or expired nonce"},
     },

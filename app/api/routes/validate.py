@@ -15,6 +15,7 @@ router = APIRouter(prefix="/validate", tags=["validate"])
     "",
     response_model=ValidationResponse,
     status_code=status.HTTP_200_OK,
+    summary="Validate signed media",
     responses={
         400: {"description": "Invalid sidecar format or validation error"},
     },

@@ -24,6 +24,7 @@ router = APIRouter(prefix="/devices", tags=["devices"])
     "",
     response_model=DeviceCreateResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Register a device",
     responses={
         401: {"description": "Attestation verification failed"},
         404: {"description": "Publisher not found"},
