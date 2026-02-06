@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   deploy-rc:
-    name: Deploy RC to Dev
+    name: Deploy RC to Prod
     runs-on: ubuntu-latest
     # Only run when 'deploy-rc' label is added
     if: github.event.label.name == 'deploy-rc'
@@ -59,16 +59,16 @@ jobs:
 
       - name: Set RC version in Railway
         run: |
-          railway variables set APP_VERSION=${{ steps.rc_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --environment dev --skip-deploys
+          railway variables set APP_VERSION=${{ steps.rc_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --skip-deploys
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
 
       - name: Deploy RC to Railway
         run: |
-          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --environment dev --detach
+          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --detach
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
 
       - name: Comment on PR
@@ -79,5 +79,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 **Release Candidate Deployed!**\n\n**Version:** \`${{ steps.rc_version.outputs.version }}\`\n\nThe RC has been deployed to the dev environment. Check the /health endpoint to verify.`
+              body: `🚀 **Release Candidate Deployed!**\n\n**Version:** \`${{ steps.rc_version.outputs.version }}\`\n\nThe RC has been deployed to the prod environment. Check the /health endpoint to verify.`
             })
