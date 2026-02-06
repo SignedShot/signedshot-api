@@ -55,16 +55,30 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Set version in Railway
+      - name: Set version in Railway (Dev)
         run: |
-          railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --skip-deploys
+          railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --environment dev --skip-deploys
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
 
-      - name: Deploy to Railway
+      - name: Deploy to Railway (Dev)
         run: |
-          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --detach
+          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --environment dev --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+
+      - name: Set version in Railway (Prod)
+        run: |
+          railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --skip-deploys
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+
+      - name: Deploy to Railway (Prod)
+        run: |
+          railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
