@@ -47,5 +47,8 @@ class Settings(BaseSettings):
     firebase_credentials_json: str = ""  # Service account JSON (as string or file path)
     firebase_project_id: str = "signedshot"
 
+    # Production restrictions
+    disable_publisher_api: bool = False  # Set to true in production
+
 
 settings = Settings()

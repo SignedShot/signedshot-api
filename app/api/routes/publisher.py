@@ -13,8 +13,18 @@ from app.schemas.publisher import (
     PublisherUpdateRequest,
 )
 from app.services.publisher import publisher_service
+from app.settings import settings
 
 router = APIRouter(prefix="/publishers", tags=["publishers"])
+
+
+def _check_publisher_api_enabled() -> None:
+    """Raise 403 if publisher API is disabled."""
+    if settings.disable_publisher_api:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Publisher API is disabled",
+        )
 
 
 def _publisher_to_response(publisher: Publisher) -> PublisherCreateResponse:
@@ -36,6 +46,7 @@ def _publisher_to_response(publisher: Publisher) -> PublisherCreateResponse:
     response_model=PublisherCreateResponse,
     status_code=status.HTTP_201_CREATED,
     responses={
+        403: {"description": "Publisher API is disabled"},
         409: {"description": "Publisher already exists"},
     },
 )
@@ -48,6 +59,8 @@ async def create_publisher(
 
     Returns publisher details including the publisher_id needed for capture sessions.
     """
+    _check_publisher_api_enabled()
+
     publisher = await publisher_service.create(
         session,
         name=request.name,
@@ -65,6 +78,7 @@ async def create_publisher(
     "/{publisher_id}",
     response_model=PublisherCreateResponse,
     responses={
+        403: {"description": "Publisher API is disabled"},
         404: {"description": "Publisher not found"},
         409: {"description": "Conflict with existing publisher"},
     },
@@ -80,6 +94,8 @@ async def update_publisher(
     Only provided fields will be updated. Fields set to null in the request
     will not be modified.
     """
+    _check_publisher_api_enabled()
+
     try:
         pub_uuid = uuid.UUID(publisher_id)
     except ValueError:
@@ -110,6 +126,7 @@ async def update_publisher(
     "/{publisher_id}",
     response_model=PublisherCreateResponse,
     responses={
+        403: {"description": "Publisher API is disabled"},
         404: {"description": "Publisher not found"},
     },
 )
@@ -120,6 +137,8 @@ async def get_publisher(
     """
     Get a publisher by ID.
     """
+    _check_publisher_api_enabled()
+
     try:
         pub_uuid = uuid.UUID(publisher_id)
     except ValueError:
