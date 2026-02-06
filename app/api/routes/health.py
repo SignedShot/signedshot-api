@@ -9,8 +9,12 @@ router = APIRouter(tags=["health"])
 class HealthResponse(BaseModel):
     """Health check response."""
 
-    status: str = Field(description="Service status. 'ok' when healthy.", examples=["ok"])
-    version: str = Field(description="Deployed application version.", examples=["v0.1.0"])
+    status: str = Field(
+        description="Service status. 'ok' when healthy.", examples=["ok"]
+    )
+    version: str = Field(
+        description="Deployed application version.", examples=["v0.1.0"]
+    )
 
 
 @router.get("/health", response_model=HealthResponse, summary="Check API health")

@@ -6,7 +6,9 @@ from app.services.jwk import JWKService, get_jwk_service_singleton
 router = APIRouter(tags=["security"])
 
 
-@router.get("/.well-known/jwks.json", response_model=JWKSResponse, summary="Get public keys")
+@router.get(
+    "/.well-known/jwks.json", response_model=JWKSResponse, summary="Get public keys"
+)
 def get_jwks(
     jwk_service: JWKService = Depends(get_jwk_service_singleton),
 ) -> JWKSResponse:
