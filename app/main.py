@@ -57,19 +57,48 @@ The API enables devices to register and obtain trust tokens that certify when an
 1. **Register a device** - Get a device token for authentication
 2. **Create a capture session** - Get a one-time nonce before capturing media
 3. **Exchange nonce for trust token** - Get a signed JWT proving capture authenticity
+4. **Validate media** - Verify authenticity of signed media with its sidecar
+
+## Authentication
+
+- Device endpoints require an `Authorization: Bearer <device_token>` header
+- Publisher ID is passed via `X-Publisher-ID` header during device registration
+- Attestation token (Firebase App Check) is passed via `X-Attestation-Token` header
 """,
     openapi_tags=[
         {
+            "name": "publishers",
+            "description": "Publisher registration and management. Publishers are apps that use SignedShot.",
+        },
+        {
             "name": "devices",
-            "description": "Device registration and management",
+            "description": "Device registration and management. Devices are user phones running a publisher's app.",
         },
         {
             "name": "capture",
-            "description": "Capture sessions and trust token generation",
+            "description": "Capture sessions and trust token generation.",
+        },
+        {
+            "name": "validate",
+            "description": "Media validation and verification.",
+        },
+        {
+            "name": "security",
+            "description": "Security endpoints for JWT verification.",
         },
         {
             "name": "health",
-            "description": "Health check endpoints",
+            "description": "Health check endpoints.",
+        },
+    ],
+    servers=[
+        {
+            "url": "https://api.signedshot.io",
+            "description": "Production API",
+        },
+        {
+            "url": "https://dev-api.signedshot.io",
+            "description": "Development API (open for testing)",
         },
     ],
 )

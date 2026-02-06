@@ -45,6 +45,7 @@ def _publisher_to_response(publisher: Publisher) -> PublisherCreateResponse:
     "",
     response_model=PublisherCreateResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create a publisher",
     responses={
         403: {"description": "Publisher API is disabled"},
         409: {"description": "Publisher already exists"},
@@ -77,6 +78,7 @@ async def create_publisher(
 @router.patch(
     "/{publisher_id}",
     response_model=PublisherCreateResponse,
+    summary="Update a publisher",
     responses={
         403: {"description": "Publisher API is disabled"},
         404: {"description": "Publisher not found"},
@@ -125,6 +127,7 @@ async def update_publisher(
 @router.get(
     "/{publisher_id}",
     response_model=PublisherCreateResponse,
+    summary="Get a publisher",
     responses={
         403: {"description": "Publisher API is disabled"},
         404: {"description": "Publisher not found"},
