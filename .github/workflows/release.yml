@@ -73,12 +73,12 @@ jobs:
         run: |
           railway variables set APP_VERSION=${{ steps.next_version.outputs.version }} --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --skip-deploys
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
 
       - name: Deploy to Railway (Prod)
         run: |
           railway up --service ${{ vars.RAILWAY_SERVICE_ID }} --environment prod --detach
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
