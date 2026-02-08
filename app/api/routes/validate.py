@@ -1,5 +1,5 @@
 import signedshot
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.schemas.validate import (
     CaptureTrustInfo,
@@ -41,9 +41,15 @@ async def validate_media(
     sidecar_json = (await sidecar.read()).decode("utf-8")
 
     jwks = jwk_service.get_jwks()
-    result = signedshot.validate_with_jwks(
-        sidecar_json, media_bytes, jwks.model_dump_json()
-    )
+    try:
+        result = signedshot.validate_with_jwks(
+            sidecar_json, media_bytes, jwks.model_dump_json()
+        )
+    except (ValueError, Exception) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Validation failed: {e}",
+        )
 
     # Convert to response model
     capture_trust = result.capture_trust
