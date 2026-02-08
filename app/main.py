@@ -64,6 +64,11 @@ The API enables devices to register and obtain trust tokens that certify when an
 - Device endpoints require an `Authorization: Bearer <device_token>` header
 - Publisher ID is passed via `X-Publisher-ID` header during device registration
 - Attestation token (Firebase App Check) is passed via `X-Attestation-Token` header
+
+## Environments
+
+- **Production:** [api.signedshot.io](https://api.signedshot.io/docs)
+- **Development:** [dev-api.signedshot.io](https://dev-api.signedshot.io/docs) (open for testing)
 """,
     openapi_tags=[
         {
@@ -89,16 +94,6 @@ The API enables devices to register and obtain trust tokens that certify when an
         {
             "name": "health",
             "description": "Health check endpoints.",
-        },
-    ],
-    servers=[
-        {
-            "url": "https://api.signedshot.io",
-            "description": "Production API",
-        },
-        {
-            "url": "https://dev-api.signedshot.io",
-            "description": "Development API (open for testing)",
         },
     ],
 )
