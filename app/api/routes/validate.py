@@ -49,7 +49,7 @@ async def validate_media(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Validation failed: {e}",
-        )
+        ) from e
 
     # Convert to response model
     capture_trust = result.capture_trust
