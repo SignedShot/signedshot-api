@@ -171,9 +171,3 @@ async def app_check_error_handler(_: Request, exc: AppCheckError) -> JSONRespons
         status_code=401,
         content={"detail": str(exc)},
     )
-
-
-@app.get("/sentry-debug")
-async def trigger_error() -> None:
-    """Temporary endpoint to verify Sentry integration. Remove before merging to main."""
-    division_by_zero = 1 / 0
