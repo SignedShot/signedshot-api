@@ -50,5 +50,12 @@ class Settings(BaseSettings):
     # Production restrictions
     disable_publisher_api: bool = False  # Set to true in production
 
+    # Environment
+    environment: str = "development"  # development, staging, production
+
+    # Sentry
+    sentry_dsn: str | None = None
+    sentry_traces_sample_rate: float = 0.1
+
 
 settings = Settings()

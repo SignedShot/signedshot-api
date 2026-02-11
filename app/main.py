@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 from typing import Any
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -39,6 +40,14 @@ class CustomJSONResponse(JSONResponse):
             cls=CustomJSONEncoder,
         ).encode("utf-8")
 
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.environment,
+        traces_sample_rate=settings.sentry_traces_sample_rate,
+        send_default_pii=False,
+    )
 
 app = FastAPI(
     title=settings.app_name,
