@@ -20,6 +20,9 @@ class SessionData:
     device_id: str
     attestation_method: str | None  # None means no attestation (sandbox)
     app_id: str | None  # App ID from attestation (e.g., bundle ID)
+    device_public_key_fingerprint: (
+        str | None
+    )  # SHA-256 of device's content-signing public key
 
 
 @dataclass
@@ -53,6 +56,7 @@ class SessionService:
         device_id: uuid.UUID,
         attestation_method: str | None,
         app_id: str | None = None,
+        device_public_key_fingerprint: str | None = None,
     ) -> CreateSessionResult:
         """
         Create a new capture session for a device.
@@ -66,6 +70,8 @@ class SessionService:
             attestation_method: The device's attestation method (e.g., "app_check")
                 or None if not attested.
             app_id: The app ID from attestation (e.g., bundle ID).
+            device_public_key_fingerprint: SHA-256 hex of the device's content-signing
+                public key, for cross-layer binding in the JWT.
         """
         # Create capture record in database
         capture = await capture_repository.create(db, publisher_id, device_id)
@@ -83,6 +89,7 @@ class SessionService:
                 "device_id": str(device_id),
                 "attestation_method": attestation_method,
                 "app_id": app_id,
+                "device_public_key_fingerprint": device_public_key_fingerprint,
             }
         )
         await self._storage.set(
@@ -113,6 +120,7 @@ class SessionService:
             device_id=data["device_id"],
             attestation_method=data.get("attestation_method"),
             app_id=data.get("app_id"),
+            device_public_key_fingerprint=data.get("device_public_key_fingerprint"),
         )
 
     async def consume(self, nonce: str) -> SessionData | None:

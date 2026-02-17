@@ -32,6 +32,7 @@ class TrustService:
         device_id: str,
         method: AttestationMethod,
         app_id: str | None = None,
+        device_public_key_fingerprint: str | None = None,
     ) -> str:
         """
         Generate a signed JWT trust token.
@@ -42,6 +43,8 @@ class TrustService:
             device_id: The device ID.
             method: The attestation method used (sandbox, app_check, app_attest).
             app_id: The app ID from attestation (e.g., bundle ID), if available.
+            device_public_key_fingerprint: SHA-256 hex of the device's content-signing
+                public key, for cross-layer binding with the media integrity proof.
 
         Returns the signed JWT string with kid in header for JWKS lookup.
         """
@@ -62,6 +65,9 @@ class TrustService:
             "device_id": device_id,
             "attestation": attestation,
         }
+
+        if device_public_key_fingerprint is not None:
+            payload["device_public_key_fingerprint"] = device_public_key_fingerprint
 
         return jwt.encode(
             payload,

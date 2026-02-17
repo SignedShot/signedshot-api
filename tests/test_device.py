@@ -61,6 +61,8 @@ def test_create_device_success_sandbox_no_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher(publisher_uuid)
 
@@ -80,7 +82,10 @@ def test_create_device_success_sandbox_no_token() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -110,7 +115,10 @@ def test_create_device_sandbox_no_provider_rejects_token() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={
                 "X-Publisher-ID": str(publisher_uuid),
                 "X-Attestation-Token": "some_token",
@@ -131,6 +139,8 @@ def test_create_device_sandbox_with_provider_no_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
 
@@ -150,7 +160,10 @@ def test_create_device_sandbox_with_provider_no_token() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -169,6 +182,8 @@ def test_create_device_sandbox_with_provider_validates_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
 
@@ -195,7 +210,10 @@ def test_create_device_sandbox_with_provider_validates_token() -> None:
 
             response = client.post(
                 "/devices",
-                json={"external_id": "test-device-123"},
+                json={
+                    "external_id": "test-device-123",
+                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
                     "X-Attestation-Token": "valid_token",
@@ -225,7 +243,10 @@ def test_create_device_non_sandbox_requires_token() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -245,6 +266,8 @@ def test_create_device_non_sandbox_with_valid_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_production_publisher(publisher_uuid)
 
@@ -271,7 +294,10 @@ def test_create_device_non_sandbox_with_valid_token() -> None:
 
             response = client.post(
                 "/devices",
-                json={"external_id": "test-device-123"},
+                json={
+                    "external_id": "test-device-123",
+                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
                     "X-Attestation-Token": "valid_app_check_token",
@@ -310,7 +336,10 @@ def test_create_device_non_sandbox_no_provider_invalid_config() -> None:
         # Non-sandbox without token first fails with "required for non-sandbox"
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -341,7 +370,10 @@ def test_create_device_non_sandbox_no_provider_with_token_invalid_config() -> No
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={
                 "X-Publisher-ID": str(publisher_uuid),
                 "X-Attestation-Token": "some_token",
@@ -375,7 +407,10 @@ def test_create_device_already_exists() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "existing-device"},
+            json={
+                "external_id": "existing-device",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -387,7 +422,7 @@ def test_create_device_missing_publisher_id() -> None:
     """Return 422 when X-Publisher-ID header is missing."""
     response = client.post(
         "/devices",
-        json={"external_id": "test-device-123"},
+        json={"external_id": "test-device-123", "public_key": "dGVzdHB1YmxpY2tleQ=="},
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -397,7 +432,7 @@ def test_create_device_invalid_publisher_id() -> None:
     """Return 400 when X-Publisher-ID is not a valid UUID."""
     response = client.post(
         "/devices",
-        json={"external_id": "test-device-123"},
+        json={"external_id": "test-device-123", "public_key": "dGVzdHB1YmxpY2tleQ=="},
         headers={"X-Publisher-ID": "not-a-uuid"},
     )
 
@@ -410,7 +445,7 @@ def test_create_device_empty_external_id() -> None:
     publisher_uuid = uuid.uuid4()
     response = client.post(
         "/devices",
-        json={"external_id": ""},
+        json={"external_id": "", "public_key": "dGVzdHB1YmxpY2tleQ=="},
         headers={"X-Publisher-ID": str(publisher_uuid)},
     )
 
@@ -431,6 +466,8 @@ def test_create_device_same_external_id_different_publishers() -> None:
         external_id=shared_external_id,
         token_hash="hashed_token_1",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
 
     mock_device_2 = Device(
@@ -439,6 +476,8 @@ def test_create_device_same_external_id_different_publishers() -> None:
         external_id=shared_external_id,
         token_hash="hashed_token_2",
         created_at=datetime.now(UTC),
+        public_key="dGVzdHB1YmxpY2tleQ==",
+        device_public_key_fingerprint="a" * 64,
     )
 
     mock_publisher_1 = _mock_sandbox_publisher(publisher_uuid_1)
@@ -459,7 +498,10 @@ def test_create_device_same_external_id_different_publishers() -> None:
         mock_service.create = AsyncMock(return_value=(mock_device_1, "token_1"))
         response_1 = client.post(
             "/devices",
-            json={"external_id": shared_external_id},
+            json={
+                "external_id": shared_external_id,
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid_1)},
         )
 
@@ -468,7 +510,10 @@ def test_create_device_same_external_id_different_publishers() -> None:
         mock_service.create = AsyncMock(return_value=(mock_device_2, "token_2"))
         response_2 = client.post(
             "/devices",
-            json={"external_id": shared_external_id},
+            json={
+                "external_id": shared_external_id,
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid_2)},
         )
 
@@ -500,7 +545,10 @@ def test_create_device_publisher_not_found() -> None:
 
         response = client.post(
             "/devices",
-            json={"external_id": "test-device-123"},
+            json={
+                "external_id": "test-device-123",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
 
@@ -531,7 +579,10 @@ def test_create_device_firebase_not_initialized() -> None:
 
             response = client.post(
                 "/devices",
-                json={"external_id": "test-device-123"},
+                json={
+                    "external_id": "test-device-123",
+                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
                     "X-Attestation-Token": "some_token",

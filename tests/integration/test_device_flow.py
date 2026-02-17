@@ -26,7 +26,10 @@ class TestDeviceRegistration:
         """Successfully create a new device."""
         response = integration_client.post(
             "/devices",
-            json={"external_id": "test-device-001"},
+            json={
+                "external_id": "test-device-001",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
 
@@ -46,7 +49,10 @@ class TestDeviceRegistration:
         # Create first device
         response1 = integration_client.post(
             "/devices",
-            json={"external_id": "duplicate-device"},
+            json={
+                "external_id": "duplicate-device",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         assert response1.status_code == status.HTTP_201_CREATED
@@ -54,7 +60,10 @@ class TestDeviceRegistration:
         # Try to create again with same external_id
         response2 = integration_client.post(
             "/devices",
-            json={"external_id": "duplicate-device"},
+            json={
+                "external_id": "duplicate-device",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         assert response2.status_code == status.HTTP_409_CONFLICT
@@ -67,7 +76,10 @@ class TestDeviceRegistration:
         # Create a device
         create_response = integration_client.post(
             "/devices",
-            json={"external_id": "session-test-device"},
+            json={
+                "external_id": "session-test-device",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         assert create_response.status_code == status.HTTP_201_CREATED
@@ -107,7 +119,10 @@ class TestDeviceRegistration:
         # Create device for first publisher
         device1_response = integration_client.post(
             "/devices",
-            json={"external_id": shared_external_id},
+            json={
+                "external_id": shared_external_id,
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id_1},
         )
         assert device1_response.status_code == status.HTTP_201_CREATED
@@ -115,7 +130,10 @@ class TestDeviceRegistration:
         # Create device with SAME external_id for second publisher - should succeed
         device2_response = integration_client.post(
             "/devices",
-            json={"external_id": shared_external_id},
+            json={
+                "external_id": shared_external_id,
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id_2},
         )
         assert device2_response.status_code == status.HTTP_201_CREATED
@@ -273,7 +291,10 @@ class TestDatetimeFormat:
         # Create device
         device_response = integration_client.post(
             "/devices",
-            json={"external_id": "datetime-test-device"},
+            json={
+                "external_id": "datetime-test-device",
+                "public_key": "dGVzdHB1YmxpY2tleQ==",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         assert device_response.status_code == status.HTTP_201_CREATED

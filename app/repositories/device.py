@@ -36,6 +36,8 @@ class DeviceRepository:
         publisher_id: uuid.UUID,
         external_id: str,
         token_hash: str,
+        public_key: str,
+        device_public_key_fingerprint: str,
         attestation_method: str | None = None,
         attested_at: datetime | None = None,
         attested_app_id: str | None = None,
@@ -47,6 +49,8 @@ class DeviceRepository:
             publisher_id: Publisher UUID.
             external_id: External device identifier.
             token_hash: Hashed device token.
+            public_key: Base64-encoded content-signing public key.
+            device_public_key_fingerprint: SHA-256 hex of the public key.
             attestation_method: Optional attestation method (e.g., "app_check").
             attested_at: Optional timestamp when attestation was verified.
             attested_app_id: Optional app ID from attestation (e.g., bundle ID).
@@ -62,6 +66,8 @@ class DeviceRepository:
             attestation_method=attestation_method,
             attested_at=attested_at,
             attested_app_id=attested_app_id,
+            public_key=public_key,
+            device_public_key_fingerprint=device_public_key_fingerprint,
         )
         session.add(device)
         try:

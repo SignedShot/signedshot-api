@@ -86,6 +86,7 @@ async def create_device(
         session,
         publisher_id,
         request.external_id,
+        request.public_key,
         attestation_method=attestation.method,
         attested_at=attestation.attested_at,
         attested_app_id=attestation.app_id,
