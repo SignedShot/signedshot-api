@@ -26,7 +26,10 @@ class TestCaptureFlow:
         """Create a device and return its credentials."""
         response = integration_client.post(
             "/devices",
-            json={"external_id": "capture-test-device"},
+            json={
+                "external_id": "capture-test-device",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         assert response.status_code == status.HTTP_201_CREATED
@@ -193,12 +196,18 @@ class TestMultipleDevices:
         # Create two devices
         device1 = integration_client.post(
             "/devices",
-            json={"external_id": "multi-device-001"},
+            json={
+                "external_id": "multi-device-001",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+            },
             headers={"X-Publisher-ID": publisher_id},
         ).json()
         device2 = integration_client.post(
             "/devices",
-            json={"external_id": "multi-device-002"},
+            json={
+                "external_id": "multi-device-002",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+            },
             headers={"X-Publisher-ID": publisher_id},
         ).json()
 

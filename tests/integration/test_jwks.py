@@ -36,7 +36,10 @@ class TestJWKSIntegration:
 
         dev_response = integration_client.post(
             "/devices",
-            json={"external_id": "jwks-test-device"},
+            json={
+                "external_id": "jwks-test-device",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         device_token = dev_response.json()["device_token"]
@@ -80,7 +83,10 @@ class TestJWKSIntegration:
 
         dev_response = integration_client.post(
             "/devices",
-            json={"external_id": "jwks-verify-device"},
+            json={
+                "external_id": "jwks-verify-device",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+            },
             headers={"X-Publisher-ID": publisher_id},
         )
         device_token = dev_response.json()["device_token"]

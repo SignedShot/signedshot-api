@@ -87,6 +87,9 @@ class Device(Base):
     attested_app_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True, default=None
     )
+    # Content-signing public key (for cross-layer binding)
+    public_key: Mapped[str] = mapped_column(String(120))
+    device_public_key_fingerprint: Mapped[str] = mapped_column(String(64))
 
 
 class Capture(Base):

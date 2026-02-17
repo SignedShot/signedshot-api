@@ -25,6 +25,8 @@ def test_create_session_success() -> None:
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
         attestation_method=None,  # No attestation (sandbox mode)
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+        device_public_key_fingerprint="a" * 64,
     )
 
     mock_capture = Capture(
@@ -98,6 +100,7 @@ def test_create_trust_token_success() -> None:
         device_id=device_id,
         attestation_method=None,  # No attestation (sandbox mode)
         app_id=None,
+        device_public_key_fingerprint=None,
     )
 
     mock_session_service = MagicMock()
@@ -123,7 +126,12 @@ def test_create_trust_token_success() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, publisher_id, device_id, method="sandbox", app_id=None
+        capture_id,
+        publisher_id,
+        device_id,
+        method="sandbox",
+        app_id=None,
+        device_public_key_fingerprint=None,
     )
 
 
@@ -142,6 +150,7 @@ def test_create_trust_token_with_app_check() -> None:
         device_id=device_id,
         attestation_method="app_check",  # Device was attested
         app_id="io.foo.bar",
+        device_public_key_fingerprint="abc123def456",
     )
 
     mock_session_service = MagicMock()
@@ -167,7 +176,12 @@ def test_create_trust_token_with_app_check() -> None:
     assert "trust_token" in data
     assert data["trust_token"] == "mock.jwt.token"
     mock_trust_service.generate_token.assert_called_once_with(
-        capture_id, publisher_id, device_id, method="app_check", app_id="io.foo.bar"
+        capture_id,
+        publisher_id,
+        device_id,
+        method="app_check",
+        app_id="io.foo.bar",
+        device_public_key_fingerprint="abc123def456",
     )
 
 
