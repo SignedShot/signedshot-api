@@ -38,7 +38,7 @@ class TestJWKSIntegration:
             "/devices",
             json={
                 "external_id": "jwks-test-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -85,7 +85,7 @@ class TestJWKSIntegration:
             "/devices",
             json={
                 "external_id": "jwks-verify-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )

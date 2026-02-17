@@ -28,7 +28,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": "test-device-001",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -51,7 +51,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": "duplicate-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -62,7 +62,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": "duplicate-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -78,7 +78,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": "session-test-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -121,7 +121,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": shared_external_id,
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id_1},
         )
@@ -132,7 +132,7 @@ class TestDeviceRegistration:
             "/devices",
             json={
                 "external_id": shared_external_id,
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id_2},
         )
@@ -293,7 +293,7 @@ class TestDatetimeFormat:
             "/devices",
             json={
                 "external_id": "datetime-test-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )

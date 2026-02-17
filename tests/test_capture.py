@@ -25,7 +25,7 @@ def test_create_session_success() -> None:
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
         attestation_method=None,  # No attestation (sandbox mode)
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
 

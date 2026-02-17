@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+import base64
+
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.base import APIDatetime, APIResponse
 
@@ -17,6 +19,21 @@ class DeviceCreateRequest(BaseModel):
         max_length=120,
         description="Base64-encoded uncompressed EC public key (65 bytes: 0x04 + X + Y) from the device's content-signing key pair",
     )
+
+    @field_validator("public_key")
+    @classmethod
+    def validate_public_key(cls, v: str) -> str:
+        try:
+            raw = base64.b64decode(v)
+        except Exception as e:
+            raise ValueError("Invalid Base64 encoding") from e
+        if len(raw) != 65:
+            raise ValueError(
+                f"Expected 65 bytes (uncompressed EC point), got {len(raw)}"
+            )
+        if raw[0] != 0x04:
+            raise ValueError("Expected uncompressed point format (0x04 prefix)")
+        return v
 
 
 class DeviceCreateResponse(APIResponse):

@@ -28,7 +28,7 @@ class TestCaptureFlow:
             "/devices",
             json={
                 "external_id": "capture-test-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         )
@@ -198,7 +198,7 @@ class TestMultipleDevices:
             "/devices",
             json={
                 "external_id": "multi-device-001",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         ).json()
@@ -206,7 +206,7 @@ class TestMultipleDevices:
             "/devices",
             json={
                 "external_id": "multi-device-002",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": publisher_id},
         ).json()

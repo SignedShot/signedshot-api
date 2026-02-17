@@ -61,7 +61,7 @@ def test_create_device_success_sandbox_no_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher(publisher_uuid)
@@ -84,7 +84,7 @@ def test_create_device_success_sandbox_no_token() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -117,7 +117,7 @@ def test_create_device_sandbox_no_provider_rejects_token() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={
                 "X-Publisher-ID": str(publisher_uuid),
@@ -139,7 +139,7 @@ def test_create_device_sandbox_with_provider_no_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
@@ -162,7 +162,7 @@ def test_create_device_sandbox_with_provider_no_token() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -182,7 +182,7 @@ def test_create_device_sandbox_with_provider_validates_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_sandbox_publisher_with_provider(publisher_uuid)
@@ -212,7 +212,7 @@ def test_create_device_sandbox_with_provider_validates_token() -> None:
                 "/devices",
                 json={
                     "external_id": "test-device-123",
-                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                    "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
                 },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
@@ -245,7 +245,7 @@ def test_create_device_non_sandbox_requires_token() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -266,7 +266,7 @@ def test_create_device_non_sandbox_with_valid_token() -> None:
         external_id="test-device-123",
         token_hash="hashed_token",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
     mock_publisher = _mock_production_publisher(publisher_uuid)
@@ -296,7 +296,7 @@ def test_create_device_non_sandbox_with_valid_token() -> None:
                 "/devices",
                 json={
                     "external_id": "test-device-123",
-                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                    "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
                 },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
@@ -338,7 +338,7 @@ def test_create_device_non_sandbox_no_provider_invalid_config() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -372,7 +372,7 @@ def test_create_device_non_sandbox_no_provider_with_token_invalid_config() -> No
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={
                 "X-Publisher-ID": str(publisher_uuid),
@@ -409,7 +409,7 @@ def test_create_device_already_exists() -> None:
             "/devices",
             json={
                 "external_id": "existing-device",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -422,7 +422,10 @@ def test_create_device_missing_publisher_id() -> None:
     """Return 422 when X-Publisher-ID header is missing."""
     response = client.post(
         "/devices",
-        json={"external_id": "test-device-123", "public_key": "dGVzdHB1YmxpY2tleQ=="},
+        json={
+            "external_id": "test-device-123",
+            "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+        },
     )
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
@@ -432,7 +435,10 @@ def test_create_device_invalid_publisher_id() -> None:
     """Return 400 when X-Publisher-ID is not a valid UUID."""
     response = client.post(
         "/devices",
-        json={"external_id": "test-device-123", "public_key": "dGVzdHB1YmxpY2tleQ=="},
+        json={
+            "external_id": "test-device-123",
+            "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+        },
         headers={"X-Publisher-ID": "not-a-uuid"},
     )
 
@@ -445,7 +451,10 @@ def test_create_device_empty_external_id() -> None:
     publisher_uuid = uuid.uuid4()
     response = client.post(
         "/devices",
-        json={"external_id": "", "public_key": "dGVzdHB1YmxpY2tleQ=="},
+        json={
+            "external_id": "",
+            "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
+        },
         headers={"X-Publisher-ID": str(publisher_uuid)},
     )
 
@@ -466,7 +475,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
         external_id=shared_external_id,
         token_hash="hashed_token_1",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
 
@@ -476,7 +485,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
         external_id=shared_external_id,
         token_hash="hashed_token_2",
         created_at=datetime.now(UTC),
-        public_key="dGVzdHB1YmxpY2tleQ==",
+        public_key="BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
         device_public_key_fingerprint="a" * 64,
     )
 
@@ -500,7 +509,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
             "/devices",
             json={
                 "external_id": shared_external_id,
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid_1)},
         )
@@ -512,7 +521,7 @@ def test_create_device_same_external_id_different_publishers() -> None:
             "/devices",
             json={
                 "external_id": shared_external_id,
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid_2)},
         )
@@ -547,7 +556,7 @@ def test_create_device_publisher_not_found() -> None:
             "/devices",
             json={
                 "external_id": "test-device-123",
-                "public_key": "dGVzdHB1YmxpY2tleQ==",
+                "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
             },
             headers={"X-Publisher-ID": str(publisher_uuid)},
         )
@@ -581,7 +590,7 @@ def test_create_device_firebase_not_initialized() -> None:
                 "/devices",
                 json={
                     "external_id": "test-device-123",
-                    "public_key": "dGVzdHB1YmxpY2tleQ==",
+                    "public_key": "BAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=",
                 },
                 headers={
                     "X-Publisher-ID": str(publisher_uuid),
