@@ -19,6 +19,9 @@ class CaptureTrustInfo(APIResponse):
     )
     issued_at: int = Field(description="Unix timestamp when token was issued")
     key_id: str | None = Field(default=None, description="Key ID used for signing")
+    device_public_key_fingerprint: str = Field(
+        description="SHA-256 fingerprint of the device's public key from the JWT"
+    )
 
 
 class MediaIntegrityInfo(APIResponse):
@@ -32,6 +35,9 @@ class MediaIntegrityInfo(APIResponse):
     )
     capture_id_match: bool = Field(
         description="Whether capture ID matches between JWT and media integrity"
+    )
+    fingerprint_match: bool = Field(
+        description="Whether device public key fingerprint matches between JWT and media integrity"
     )
     content_hash: str = Field(description="SHA256 hash of the media content")
     capture_id: str = Field(description="Capture ID from media integrity")
