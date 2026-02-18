@@ -68,7 +68,9 @@ async def validate_media(
             app_id=capture_trust.get("app_id"),
             issued_at=capture_trust["issued_at"],
             key_id=capture_trust.get("key_id"),
-            device_public_key_fingerprint=capture_trust["device_public_key_fingerprint"],
+            device_public_key_fingerprint=capture_trust[
+                "device_public_key_fingerprint"
+            ],
         ),
         media_integrity=MediaIntegrityInfo(
             content_hash_valid=media_integrity["content_hash_valid"],
