@@ -68,11 +68,13 @@ async def validate_media(
             app_id=capture_trust.get("app_id"),
             issued_at=capture_trust["issued_at"],
             key_id=capture_trust.get("key_id"),
+            device_public_key_fingerprint=capture_trust["device_public_key_fingerprint"],
         ),
         media_integrity=MediaIntegrityInfo(
             content_hash_valid=media_integrity["content_hash_valid"],
             signature_valid=media_integrity["signature_valid"],
             capture_id_match=media_integrity["capture_id_match"],
+            fingerprint_match=media_integrity["fingerprint_match"],
             content_hash=media_integrity["content_hash"],
             capture_id=media_integrity["capture_id"],
             captured_at=media_integrity["captured_at"],
