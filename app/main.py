@@ -109,12 +109,14 @@ The API enables devices to register and obtain trust tokens that certify when an
 
 # CORS configuration
 cors_origins = ["https://signedshot.io", "https://www.signedshot.io"]
+cors_origin_regex = r"https://signedshot-site.*\.vercel\.app"
 if settings.debug:
     cors_origins.append("http://localhost:3000")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=cors_origin_regex,
     allow_methods=["*"],
     allow_headers=["*"],
 )
